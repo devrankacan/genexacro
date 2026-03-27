@@ -27,7 +27,7 @@ export default function Layout({ children }) {
   const pageTitle = PAGE_TITLES[location.pathname] || 'Genexa CRO'
 
   return (
-    <div className="flex h-full w-full bg-[#0f1117] overflow-hidden">
+    <div className="flex h-full w-full bg-surface overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -48,7 +48,7 @@ export default function Layout({ children }) {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 md:px-6 bg-[#0f1117] border-b border-surface-border">
+        <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 md:px-6 bg-surface border-b border-surface-border">
           <div className="flex items-center gap-3">
             {/* Hamburger - mobile only */}
             <button

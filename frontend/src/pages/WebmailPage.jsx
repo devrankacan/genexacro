@@ -295,7 +295,7 @@ export default function WebmailPage() {
         `}
       >
         {/* Search + toolbar */}
-        <div className="px-4 py-3 border-b border-surface-border bg-[#0f1117]">
+        <div className="px-4 py-3 border-b border-surface-border bg-surface">
           <div className="flex items-center gap-2">
             {/* Back to folders button - mobile only */}
             <button

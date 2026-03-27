@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import { Eye, EyeOff, Dna, Lock, Mail, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const { login } = useAuth()
+  const { accent, logoUrl, companyName, mode, toggleMode } = useTheme()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -38,36 +40,66 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#0f1117] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decoration */}
+    <div
+      className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
+      {/* Background glow decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-600/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/3 rounded-full blur-3xl" />
+        <div
+          className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl opacity-10"
+          style={{ backgroundColor: accent }}
+        />
+        <div
+          className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full blur-3xl opacity-10"
+          style={{ backgroundColor: accent }}
+        />
       </div>
 
-      {/* Grid pattern overlay */}
+      {/* Grid overlay */}
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: `linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(to right, #3b82f6 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(${accent} 1px, transparent 1px), linear-gradient(to right, ${accent} 1px, transparent 1px)`,
           backgroundSize: '40px 40px',
         }}
       />
 
+      {/* Dark/light toggle — top right */}
+      <button
+        onClick={toggleMode}
+        className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-lg border border-surface-border bg-surface-card text-gray-400 hover:text-gray-200 transition-all z-10"
+        title={mode === 'dark' ? 'Gündüz moduna geç' : 'Gece moduna geç'}
+      >
+        {mode === 'dark' ? '☀️' : '🌙'}
+      </button>
+
       <div className="relative w-full max-w-md animate-fade-in">
         {/* Card */}
-        <div className="bg-surface-card backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+        <div
+          className="border border-surface-border rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300"
+          style={{ backgroundColor: 'var(--bg-card)' }}
+        >
           {/* Top accent line */}
-          <div className="h-0.5 bg-gradient-to-r from-transparent via-brand-500 to-transparent" />
+          <div className="h-0.5" style={{ background: `linear-gradient(to right, transparent, ${accent}, transparent)` }} />
 
           <div className="px-8 py-8">
             {/* Logo & Header */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 shadow-lg shadow-brand-500/10 mb-4">
-                <Dna size={32} className="text-brand-400" />
+              <div
+                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 border overflow-hidden"
+                style={{
+                  backgroundColor: `rgba(${parseInt(accent.slice(1,3),16)},${parseInt(accent.slice(3,5),16)},${parseInt(accent.slice(5,7),16)},0.12)`,
+                  borderColor: `rgba(${parseInt(accent.slice(1,3),16)},${parseInt(accent.slice(3,5),16)},${parseInt(accent.slice(5,7),16)},0.25)`,
+                }}
+              >
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <Dna size={32} style={{ color: accent }} />
+                )}
               </div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">Genexa CRO</h1>
+              <h1 className="text-2xl font-bold text-white tracking-tight">{companyName || 'Genexa CRO'}</h1>
               <p className="text-sm text-gray-400 mt-1">Kurumsal İletişim Merkezi</p>
             </div>
 
@@ -86,10 +118,7 @@ export default function LoginPage() {
                   E-posta Adresi
                 </label>
                 <div className="relative">
-                  <Mail
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                  />
+                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
                     type="email"
                     value={email}
@@ -108,10 +137,7 @@ export default function LoginPage() {
                   Şifre
                 </label>
                 <div className="relative">
-                  <Lock
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                  />
+                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -136,7 +162,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand-500 hover:bg-brand-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/25 mt-2"
+                className="w-full disabled:opacity-60 disabled:cursor-not-allowed font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 mt-2"
+                style={{ backgroundColor: accent, color: 'var(--accent-text)' }}
               >
                 {loading ? (
                   <>
@@ -152,15 +179,14 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="px-8 py-4 bg-surface-elevated border-t border-surface-border">
-            <p className="text-center text-xs text-gray-600">
+            <p className="text-center text-xs text-gray-500">
               Hesabınız yoksa sistem yöneticinize başvurun.
             </p>
           </div>
         </div>
 
-        {/* Bottom text */}
-        <p className="text-center text-xs text-gray-700 mt-6">
-          &copy; {new Date().getFullYear()} Genexa CRO &mdash; Tüm hakları saklıdır.
+        <p className="text-center text-xs text-gray-600 mt-6">
+          &copy; {new Date().getFullYear()} {companyName || 'Genexa CRO'} &mdash; Tüm hakları saklıdır.
         </p>
       </div>
     </div>

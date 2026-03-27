@@ -451,7 +451,7 @@ export default function ChatPage() {
       `}>
         {/* Chat header */}
         {(activeChannel || activeDM) && (
-          <div className="h-14 flex-shrink-0 flex items-center justify-between px-3 md:px-5 border-b border-surface-border bg-[#0f1117]">
+          <div className="h-14 flex-shrink-0 flex items-center justify-between px-3 md:px-5 border-b border-surface-border bg-surface">
             <div className="flex items-center gap-2 md:gap-2.5">
               {/* Back button - mobile only */}
               <button
