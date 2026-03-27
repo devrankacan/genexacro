@@ -2,6 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Dynamic theme variables (overridden by ThemeContext) ── */
+:root {
+  --accent: #3b82f6;
+  --accent-r: 59;
+  --accent-g: 130;
+  --accent-b: 246;
+  --accent-10: rgba(59,130,246,0.10);
+  --accent-20: rgba(59,130,246,0.20);
+  --accent-30: rgba(59,130,246,0.30);
+  --accent-text: #ffffff;
+}
+
+/* ── Dynamic overrides for accent-colored components ── */
+.btn-primary {
+  background-color: var(--accent) !important;
+  color: var(--accent-text) !important;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.88);
+}
+.nav-item.active {
+  background-color: var(--accent-20) !important;
+  color: var(--accent) !important;
+}
+.input-field:focus {
+  --tw-ring-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent) !important;
+}
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+.fc .fc-day-today .fc-daygrid-day-number {
+  background-color: var(--accent) !important;
+}
+.fc {
+  --fc-button-active-bg-color: var(--accent) !important;
+  --fc-button-active-border-color: var(--accent) !important;
+  --fc-today-bg-color: var(--accent-10) !important;
+}
+.ProseMirror blockquote {
+  border-left-color: var(--accent) !important;
+}
+.ProseMirror mark {
+  background-color: var(--accent-30) !important;
+}
+
 @layer base {
   * {
     box-sizing: border-box;

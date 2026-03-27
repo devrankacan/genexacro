@@ -21,6 +21,8 @@ import {
   AlertTriangle,
   BarChart2,
   Eye,
+  Server,
+  Lock,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { tr } from 'date-fns/locale'
@@ -32,6 +34,7 @@ const TABS = [
   { key: 'users', label: 'Kullanıcılar', icon: Users },
   { key: 'logs', label: 'Denetim Günlüğü', icon: Activity },
   { key: 'emails', label: 'E-posta Trafiği', icon: Mail },
+  { key: 'mailsettings', label: 'Mail Ayarları', icon: Server },
 ]
 
 const ROLES = ['user', 'admin', 'moderator']
@@ -685,6 +688,133 @@ function EmailTrafficTab() {
   )
 }
 
+// ─── Mail Settings Tab ──────────────────────────────────────────────────────
+function MailSettingsTab() {
+  const [form, setForm] = useState({
+    smtp_host: '', smtp_port: '587', smtp_user: '', smtp_pass: '', smtp_secure: 'false',
+    imap_host: '', imap_port: '993', imap_user: '', imap_pass: '',
+  })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [showSmtpPass, setShowSmtpPass] = useState(false)
+  const [showImapPass, setShowImapPass] = useState(false)
+
+  useEffect(() => {
+    api.get('/api/settings/mail')
+      .then(({ data }) => setForm(prev => ({ ...prev, ...data, smtp_pass: '', imap_pass: '' })))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await api.put('/api/settings/mail', form)
+      toast.success('Mail ayarları kaydedildi.')
+    } catch {
+      toast.error('Kaydedilemedi.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-48">
+      <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+    </div>
+  )
+
+  return (
+    <div className="p-6 max-w-2xl space-y-6">
+      <div>
+        <h2 className="text-base font-semibold text-white mb-0.5">Mail Sunucu Ayarları</h2>
+        <p className="text-xs text-gray-400">Gönderme (SMTP) ve alma (IMAP) sunucu bilgilerini girin.</p>
+      </div>
+
+      {/* SMTP */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b border-surface-border">
+          <ArrowUp size={14} className="text-gray-400" />
+          <h3 className="text-sm font-semibold text-white">SMTP — Giden Posta</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Sunucu Adresi</label>
+            <input name="smtp_host" value={form.smtp_host} onChange={handleChange} className="input-field" placeholder="mail.genexa.com.tr" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Port</label>
+            <input name="smtp_port" value={form.smtp_port} onChange={handleChange} className="input-field" placeholder="587" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Kullanıcı Adı / E-posta</label>
+            <input name="smtp_user" value={form.smtp_user} onChange={handleChange} className="input-field" placeholder="info@genexa.com.tr" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Şifre</label>
+            <div className="relative">
+              <input name="smtp_pass" type={showSmtpPass ? 'text' : 'password'} value={form.smtp_pass} onChange={handleChange} className="input-field pr-10" placeholder={form.smtp_pass_set ? '••••••••' : 'Şifre girin'} />
+              <button type="button" onClick={() => setShowSmtpPass(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                <Eye size={14} />
+              </button>
+            </div>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs text-gray-400 mb-1.5">Güvenlik</label>
+            <select name="smtp_secure" value={form.smtp_secure} onChange={handleChange} className="input-field max-w-xs">
+              <option value="false" className="bg-surface-card">STARTTLS (Port 587)</option>
+              <option value="true" className="bg-surface-card">SSL/TLS (Port 465)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* IMAP */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b border-surface-border">
+          <ArrowDown size={14} className="text-gray-400" />
+          <h3 className="text-sm font-semibold text-white">IMAP — Gelen Posta</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Sunucu Adresi</label>
+            <input name="imap_host" value={form.imap_host} onChange={handleChange} className="input-field" placeholder="mail.genexa.com.tr" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Port</label>
+            <input name="imap_port" value={form.imap_port} onChange={handleChange} className="input-field" placeholder="993" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Kullanıcı Adı / E-posta</label>
+            <input name="imap_user" value={form.imap_user} onChange={handleChange} className="input-field" placeholder="info@genexa.com.tr" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5">Şifre</label>
+            <div className="relative">
+              <input name="imap_pass" type={showImapPass ? 'text' : 'password'} value={form.imap_pass} onChange={handleChange} className="input-field pr-10" placeholder={form.imap_pass_set ? '••••••••' : 'Şifre girin'} />
+              <button type="button" onClick={() => setShowImapPass(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                <Eye size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button onClick={handleSave} disabled={saving} className="btn-primary">
+          {saving ? <><RefreshCw size={14} className="animate-spin" /> Kaydediliyor...</> : <><Check size={14} /> Kaydet</>}
+        </button>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <Lock size={12} />
+          Şifreler şifreli şekilde saklanır
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('stats')
 
@@ -716,6 +846,7 @@ export default function AdminPage() {
         {activeTab === 'users' && <UsersTab />}
         {activeTab === 'logs' && <LogsTab />}
         {activeTab === 'emails' && <EmailTrafficTab />}
+        {activeTab === 'mailsettings' && <MailSettingsTab />}
       </div>
     </div>
   )

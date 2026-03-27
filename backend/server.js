@@ -86,6 +86,7 @@ app.use('/api/notes',     require('./src/routes/notes'));
 app.use('/api/admin',     require('./src/routes/admin'));
 app.use('/api/files',     require('./src/routes/files'));
 app.use('/api/meetings',  require('./src/routes/meetings'));
+app.use('/api/settings',  require('./src/routes/settings'));
 
 // ─────────────────────────────────────────────
 // 404 Handler

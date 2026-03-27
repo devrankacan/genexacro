@@ -10,9 +10,11 @@ import {
   LogOut,
   Dna,
   ChevronRight,
+  Settings,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useSocket } from '../../context/SocketContext'
+import { useTheme } from '../../context/ThemeContext'
 
 const NAV_ITEMS = [
   { path: '/webmail', icon: Mail, label: 'E-Posta' },
@@ -35,6 +37,7 @@ function getInitials(name) {
 export default function Sidebar() {
   const { user, logout, isAdmin } = useAuth()
   const { connected } = useSocket()
+  const { logoUrl, companyName, accent } = useTheme()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -47,11 +50,18 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-4 py-5 border-b border-surface-border">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
-            <Dna size={20} className="text-white" />
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg overflow-hidden flex-shrink-0"
+            style={{ backgroundColor: accent }}
+          >
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+            ) : (
+              <Dna size={20} style={{ color: 'var(--accent-text)' }} />
+            )}
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white leading-tight">Genexa CRO</h1>
+            <h1 className="text-sm font-bold text-white leading-tight">{companyName || 'Genexa CRO'}</h1>
             <p className="text-[10px] text-gray-500 leading-tight mt-0.5">İletişim Merkezi</p>
           </div>
         </div>
@@ -93,6 +103,15 @@ export default function Sidebar() {
               <Shield size={17} />
               <span>Yönetim Paneli</span>
             </NavLink>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                `nav-item ${isActive ? 'active' : ''}`
+              }
+            >
+              <Settings size={17} />
+              <span>Sistem Ayarları</span>
+            </NavLink>
           </>
         )}
       </nav>
@@ -101,7 +120,10 @@ export default function Sidebar() {
       <div className="px-3 py-3 border-t border-surface-border">
         <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-surface-card transition-colors group">
           <div className="relative flex-shrink-0">
-            <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-xs font-semibold text-brand-300">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold"
+              style={{ backgroundColor: `rgba(${parseInt(accent.slice(1,3),16)},${parseInt(accent.slice(3,5),16)},${parseInt(accent.slice(5,7),16)},0.2)`, color: accent }}
+            >
               {getInitials(user?.name)}
             </div>
             <span

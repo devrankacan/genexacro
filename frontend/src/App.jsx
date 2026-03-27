@@ -9,6 +9,7 @@ import MeetingPage from './pages/MeetingPage'
 import CalendarPage from './pages/CalendarPage'
 import NotesPage from './pages/NotesPage'
 import AdminPage from './pages/AdminPage'
+import SettingsPage from './pages/SettingsPage'
 
 function ProtectedRoute({ children, adminOnly = false }) {
   const { isAuthenticated, isAdmin, loading } = useAuth()
@@ -72,6 +73,14 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly>
                       <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <SettingsPage />
                     </ProtectedRoute>
                   }
                 />

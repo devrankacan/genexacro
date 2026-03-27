@@ -7,25 +7,39 @@ const { simpleParser } = require('mailparser');
 const { v4: uuidv4 } = require('uuid');
 const { getDb, logAudit } = require('../database');
 const { authenticate } = require('../middleware/auth');
+const { getSetting } = require('./settings');
 
 const router = express.Router();
 
 /**
- * Create nodemailer transporter from environment config
+ * Create nodemailer transporter from DB settings (fallback to .env)
  */
 function createTransporter() {
+  const db = getDb();
+  const host = getSetting(db, 'smtp_host') || process.env.SMTP_HOST || '';
+  const port = parseInt(getSetting(db, 'smtp_port') || process.env.SMTP_PORT || '587', 10);
+  const user = getSetting(db, 'smtp_user') || process.env.SMTP_USER || '';
+  const pass = getSetting(db, 'smtp_pass') || process.env.SMTP_PASS || '';
+  const secure = (getSetting(db, 'smtp_secure') || 'false') === 'true' || port === 465;
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'mail.genexa.com.tr',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: parseInt(process.env.SMTP_PORT || '587', 10) === 465,
-    auth: {
-      user: process.env.SMTP_USER || 'info@genexa.com.tr',
-      pass: process.env.SMTP_PASS || ''
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
+    host, port, secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false }
   });
+}
+
+/**
+ * Get IMAP config from DB settings (fallback to .env)
+ */
+function getImapConfig() {
+  const db = getDb();
+  return {
+    host: getSetting(db, 'imap_host') || process.env.IMAP_HOST || '',
+    port: parseInt(getSetting(db, 'imap_port') || process.env.IMAP_PORT || '993', 10),
+    user: getSetting(db, 'imap_user') || process.env.IMAP_USER || '',
+    pass: getSetting(db, 'imap_pass') || process.env.IMAP_PASS || '',
+  };
 }
 
 /**
@@ -235,11 +249,12 @@ router.delete('/:id', authenticate, (req, res) => {
  * Fetch emails from IMAP server and store locally
  */
 router.post('/fetch', authenticate, (req, res) => {
+  const cfg = getImapConfig();
   const imapConfig = {
-    user: process.env.IMAP_USER || 'info@genexa.com.tr',
-    password: process.env.IMAP_PASS || '',
-    host: process.env.IMAP_HOST || 'mail.genexa.com.tr',
-    port: parseInt(process.env.IMAP_PORT || '993', 10),
+    user: cfg.user,
+    password: cfg.pass,
+    host: cfg.host,
+    port: cfg.port,
     tls: true,
     tlsOptions: { rejectUnauthorized: false },
     authTimeout: 10000,
