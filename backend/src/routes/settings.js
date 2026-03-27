@@ -53,7 +53,7 @@ router.put('/theme', authenticate, requireAdmin, (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/mail', authenticate, requireAdmin, (req, res) => {
   const db = getDb();
-  const keys = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_secure', 'imap_host', 'imap_port', 'imap_user', 'imap_pass'];
+  const keys = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_secure', 'smtp_from_name', 'imap_host', 'imap_port', 'imap_user', 'imap_pass'];
   const settings = {};
   keys.forEach(k => { settings[k] = getSetting(db, k); });
   // Mask password for display
@@ -67,7 +67,7 @@ router.get('/mail', authenticate, requireAdmin, (req, res) => {
 // ─────────────────────────────────────────────
 router.put('/mail', authenticate, requireAdmin, (req, res) => {
   const db = getDb();
-  const { smtp_host, smtp_port, smtp_user, smtp_pass, smtp_secure, imap_host, imap_port, imap_user, imap_pass } = req.body;
+  const { smtp_host, smtp_port, smtp_user, smtp_pass, smtp_secure, smtp_from_name, imap_host, imap_port, imap_user, imap_pass } = req.body;
 
   const update = db.transaction(() => {
     if (smtp_host !== undefined) setSetting(db, 'smtp_host', smtp_host);
@@ -75,6 +75,7 @@ router.put('/mail', authenticate, requireAdmin, (req, res) => {
     if (smtp_user !== undefined) setSetting(db, 'smtp_user', smtp_user);
     if (smtp_pass !== undefined && smtp_pass !== '') setSetting(db, 'smtp_pass', smtp_pass);
     if (smtp_secure !== undefined) setSetting(db, 'smtp_secure', smtp_secure);
+    if (smtp_from_name !== undefined) setSetting(db, 'smtp_from_name', smtp_from_name);
     if (imap_host !== undefined) setSetting(db, 'imap_host', imap_host);
     if (imap_port !== undefined) setSetting(db, 'imap_port', imap_port);
     if (imap_user !== undefined) setSetting(db, 'imap_user', imap_user);

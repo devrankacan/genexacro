@@ -5,9 +5,12 @@ const nodemailer = require('nodemailer');
 const Imap = require('imap');
 const { simpleParser } = require('mailparser');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 const { getDb, logAudit } = require('../database');
 const { authenticate } = require('../middleware/auth');
 const { getSetting } = require('./settings');
+
+const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads'));
 
 const router = express.Router();
 
@@ -158,7 +161,7 @@ router.get('/:id', authenticate, (req, res) => {
  */
 router.post('/send', authenticate, async (req, res) => {
   try {
-    const { to, subject, body, cc, bcc } = req.body;
+    const { to, subject, body, cc, bcc, attachmentUrls = [] } = req.body;
 
     if (!to || !subject || !body) {
       return res.status(400).json({ error: 'Alıcı, konu ve içerik zorunludur.' });
@@ -167,14 +170,22 @@ router.post('/send', authenticate, async (req, res) => {
     const transporter = createTransporter();
     const db = getDb();
     const smtpUser = getSetting(db, 'smtp_user') || process.env.SMTP_USER || req.user.email;
+    const fromName = getSetting(db, 'smtp_from_name') || req.user.name;
+
+    // Build nodemailer attachments from uploaded file URLs
+    const attachments = (Array.isArray(attachmentUrls) ? attachmentUrls : []).map(item => {
+      const filename = path.basename(item.url || item);
+      return { filename: item.originalname || filename, path: path.join(UPLOAD_DIR, filename) };
+    });
 
     const mailOptions = {
-      from: `"${req.user.name}" <${smtpUser}>`,
+      from: `"${fromName}" <${smtpUser}>`,
       to,
       subject,
       html: body,
       cc: cc || undefined,
-      bcc: bcc || undefined
+      bcc: bcc || undefined,
+      attachments,
     };
 
     let sendResult = null;
@@ -190,6 +201,10 @@ router.post('/send', authenticate, async (req, res) => {
     // Save to DB regardless of SMTP result (store locally)
     const emailId = uuidv4();
     const messageId = sendResult ? sendResult.messageId : `local-${emailId}`;
+    const attachmentsMeta = (Array.isArray(attachmentUrls) ? attachmentUrls : []).map(a => ({
+      filename: a.originalname || path.basename(a.url || a),
+      url: a.url || a,
+    }));
 
     db.prepare(`
       INSERT INTO emails (id, message_id, from_addr, to_addr, subject, body, direction, read, folder, user_id, attachments)
@@ -202,7 +217,7 @@ router.post('/send', authenticate, async (req, res) => {
       subject,
       body,
       req.user.id,
-      JSON.stringify([])
+      JSON.stringify(attachmentsMeta)
     );
 
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
@@ -224,21 +239,51 @@ router.post('/send', authenticate, async (req, res) => {
 });
 
 /**
+ * GET /api/email/trash
+ * List trashed emails for authenticated user
+ */
+router.get('/trash', authenticate, (req, res) => {
+  try {
+    const db = getDb();
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const emails = db.prepare(`
+      SELECT id, message_id, from_addr, to_addr, subject, direction, read, folder, created_at, attachments
+      FROM emails
+      WHERE user_id = ? AND folder = 'trash'
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `).all(req.user.id, parseInt(limit), offset);
+
+    const total = db.prepare(`SELECT COUNT(*) as count FROM emails WHERE user_id = ? AND folder = 'trash'`).get(req.user.id);
+
+    res.json({ emails, total: total.count, page: parseInt(page), pages: Math.ceil(total.count / parseInt(limit)) });
+  } catch (err) {
+    res.status(500).json({ error: 'Çöp kutusu alınırken bir hata oluştu.' });
+  }
+});
+
+/**
  * DELETE /api/email/:id
- * Delete an email
+ * Move to trash (soft delete). If already in trash, permanently delete.
  */
 router.delete('/:id', authenticate, (req, res) => {
   try {
     const db = getDb();
-    const email = db.prepare('SELECT id FROM emails WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+    const email = db.prepare('SELECT id, folder FROM emails WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
 
     if (!email) {
       return res.status(404).json({ error: 'E-posta bulunamadı.' });
     }
 
-    db.prepare('DELETE FROM emails WHERE id = ?').run(req.params.id);
+    if (email.folder === 'trash') {
+      db.prepare('DELETE FROM emails WHERE id = ?').run(req.params.id);
+      return res.json({ message: 'E-posta kalıcı olarak silindi.' });
+    }
 
-    res.json({ message: 'E-posta silindi.' });
+    db.prepare("UPDATE emails SET folder = 'trash' WHERE id = ?").run(req.params.id);
+    res.json({ message: 'E-posta çöp kutusuna taşındı.' });
   } catch (err) {
     console.error('[Email] Delete error:', err);
     res.status(500).json({ error: 'E-posta silinirken bir hata oluştu.' });

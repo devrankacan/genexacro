@@ -691,7 +691,7 @@ function EmailTrafficTab() {
 // ─── Mail Settings Tab ──────────────────────────────────────────────────────
 function MailSettingsTab() {
   const [form, setForm] = useState({
-    smtp_host: '', smtp_port: '587', smtp_user: '', smtp_pass: '', smtp_secure: 'false',
+    smtp_host: '', smtp_port: '587', smtp_user: '', smtp_pass: '', smtp_secure: 'false', smtp_from_name: '',
     imap_host: '', imap_port: '993', imap_user: '', imap_pass: '',
   })
   const [loading, setLoading] = useState(true)
@@ -760,6 +760,10 @@ function MailSettingsTab() {
                 <Eye size={14} />
               </button>
             </div>
+          </div>
+          <div className="col-span-1 sm:col-span-2">
+            <label className="block text-xs text-gray-400 mb-1.5">Gönderen Adı (Görünen İsim)</label>
+            <input name="smtp_from_name" value={form.smtp_from_name} onChange={handleChange} className="input-field" placeholder="Genexa CRO İletişim" />
           </div>
           <div className="col-span-1 sm:col-span-2">
             <label className="block text-xs text-gray-400 mb-1.5">Güvenlik</label>

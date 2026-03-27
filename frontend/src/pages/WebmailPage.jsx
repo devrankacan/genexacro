@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Inbox,
   Send,
@@ -47,6 +47,9 @@ function ComposeModal({ onClose, onSent, prefillTo = '', prefillSubject = '', pr
   const [subject, setSubject] = useState(prefillSubject)
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
+  const [attachments, setAttachments] = useState([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     api.get('/api/auth/signature').then(({ data }) => {
@@ -68,7 +71,7 @@ function ComposeModal({ onClose, onSent, prefillTo = '', prefillSubject = '', pr
     }
     setSending(true)
     try {
-      const res = await api.post('/api/email/send', { to: to.trim(), subject: subject.trim(), body })
+      const res = await api.post('/api/email/send', { to: to.trim(), subject: subject.trim(), body, attachmentUrls: attachments })
       if (res.status === 207) {
         toast('E-posta kaydedildi ancak SMTP ile gönderilemedi. Mail ayarlarını kontrol edin.', { icon: '⚠️' })
       } else {
@@ -119,11 +122,30 @@ function ComposeModal({ onClose, onSent, prefillTo = '', prefillSubject = '', pr
           </div>
         </div>
         <div className="flex items-center justify-between px-6 py-4 border-t border-surface-border bg-surface-sidebar">
-          <div className="flex items-center gap-2">
-            <button className="btn-secondary text-xs py-1.5 px-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <input type="file" ref={fileInputRef} className="hidden" multiple onChange={async (e) => {
+              const files = Array.from(e.target.files)
+              if (!files.length) return
+              setUploading(true)
+              try {
+                const formData = new FormData()
+                files.forEach(f => formData.append('files', f))
+                const res = await api.post('/api/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+                const uploaded = (res.data.files || []).map(f => ({ url: f.url, originalname: f.originalname }))
+                setAttachments(prev => [...prev, ...uploaded])
+              } catch { toast.error('Dosya yüklenemedi.') }
+              finally { setUploading(false); e.target.value = '' }
+            }} />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs py-1.5 px-3">
               <Paperclip size={14} />
-              Dosya Ekle
+              {uploading ? 'Yükleniyor...' : 'Dosya Ekle'}
             </button>
+            {attachments.map((a, i) => (
+              <span key={i} className="flex items-center gap-1 text-xs bg-surface-card border border-surface-border px-2 py-1 rounded-lg text-gray-300">
+                {a.originalname}
+                <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 ml-1"><X size={10} /></button>
+              </span>
+            ))}
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onClose} className="btn-secondary text-xs py-1.5">
@@ -173,7 +195,7 @@ export default function WebmailPage() {
     setSelectedEmail(null)
     setMobileView('list')
     try {
-      const endpoint = activeFolder === 'sent' ? '/api/email/sent' : '/api/email/inbox'
+      const endpoint = activeFolder === 'sent' ? '/api/email/sent' : activeFolder === 'trash' ? '/api/email/trash' : '/api/email/inbox'
       const res = await api.get(endpoint, {
         params: { page, limit: PER_PAGE },
       })
