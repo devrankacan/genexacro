@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0f1117;
+    color: #e2e8f0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1a1d27;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2e3347;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-500 hover:bg-brand-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-card hover:bg-surface-elevated text-gray-300 font-medium px-4 py-2 rounded-lg border border-surface-border transition-colors duration-200 flex items-center gap-2;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-card border border-surface-border text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-gray-500 transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-surface-card rounded-xl border border-surface-border;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-gray-100 hover:bg-surface-card transition-all duration-200 cursor-pointer text-sm font-medium;
+  }
+
+  .nav-item.active {
+    @apply text-white bg-brand-500/20 text-brand-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-blue {
+    @apply badge bg-brand-500/20 text-brand-300;
+  }
+
+  .badge-green {
+    @apply badge bg-green-500/20 text-green-300;
+  }
+
+  .badge-red {
+    @apply badge bg-red-500/20 text-red-300;
+  }
+
+  .badge-yellow {
+    @apply badge bg-yellow-500/20 text-yellow-300;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4;
+  }
+
+  .modal-content {
+    @apply bg-surface-card rounded-xl border border-surface-border shadow-2xl w-full;
+  }
+
+  .table-header {
+    @apply text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 border-b border-surface-border;
+  }
+
+  .table-cell {
+    @apply px-4 py-3 text-sm text-gray-300 border-b border-surface-border/50;
+  }
+}
+
+/* TipTap editor styles */
+.ProseMirror {
+  outline: none;
+  min-height: 200px;
+  padding: 12px;
+  color: #e2e8f0;
+  line-height: 1.6;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #f1f5f9;
+}
+
+.ProseMirror h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.ProseMirror h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror code {
+  background: #1a1d27;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.875em;
+  color: #93c5fd;
+}
+
+.ProseMirror pre {
+  background: #1a1d27;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+  border: 1px solid #2e3347;
+}
+
+.ProseMirror pre code {
+  background: none;
+  padding: 0;
+  color: #93c5fd;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid #3b82f6;
+  padding-left: 1rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror mark {
+  background: #3b82f6/30;
+  background-color: rgba(59, 130, 246, 0.3);
+  border-radius: 2px;
+  padding: 0.1rem 0.2rem;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #4b5563;
+  pointer-events: none;
+  height: 0;
+}
+
+/* FullCalendar dark theme overrides */
+.fc {
+  --fc-border-color: #2e3347;
+  --fc-button-bg-color: #242736;
+  --fc-button-border-color: #2e3347;
+  --fc-button-hover-bg-color: #2d3144;
+  --fc-button-hover-border-color: #3b82f6;
+  --fc-button-active-bg-color: #3b82f6;
+  --fc-button-active-border-color: #3b82f6;
+  --fc-event-bg-color: #3b82f6;
+  --fc-event-border-color: #2563eb;
+  --fc-today-bg-color: rgba(59, 130, 246, 0.08);
+  --fc-page-bg-color: #0f1117;
+  --fc-neutral-bg-color: #1a1d27;
+  --fc-list-event-hover-bg-color: #242736;
+}
+
+.fc .fc-toolbar-title {
+  color: #f1f5f9;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: #94a3b8;
+}
+
+.fc .fc-daygrid-day-number:hover {
+  color: #3b82f6;
+}
+
+.fc .fc-button {
+  font-size: 0.8125rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-theme-standard .fc-scrollgrid {
+  border-color: #2e3347;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-event {
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.fc .fc-timegrid-slot-label-cushion {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
