@@ -93,7 +93,7 @@ function CreateRoomModal({ onClose, onCreate }) {
     if (!name.trim()) { toast.error('Toplantı adı gerekli'); return }
     setLoading(true)
     try {
-      const res = await api.post('/api/meeting/rooms', { name: name.trim(), description: desc.trim() })
+      const res = await api.post('/api/meetings/rooms', { name: name.trim(), description: desc.trim() })
       onCreate(res.data)
       onClose()
     } catch (err) {
@@ -246,7 +246,7 @@ export default function MeetingPage() {
   const fetchRooms = useCallback(async () => {
     setLoadingRooms(true)
     try {
-      const res = await api.get('/api/meeting/rooms')
+      const res = await api.get('/api/meetings/rooms')
       setRooms(res.data.rooms || res.data || [])
     } catch {}
     finally { setLoadingRooms(false) }
@@ -403,7 +403,7 @@ export default function MeetingPage() {
   const handleJoinByCode = async () => {
     if (!joinCode.trim()) return
     try {
-      const res = await api.get(`/api/meeting/rooms/by-code/${joinCode.trim().toUpperCase()}`)
+      const res = await api.get(`/api/meetings/rooms/by-code/${joinCode.trim().toUpperCase()}`)
       const room = res.data
       await joinRoom(room)
     } catch {
