@@ -193,8 +193,8 @@ function StatsTab() {
   }
 
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="p-3 md:p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
         <StatCard icon={Users} label="Toplam Kullanıcı" value={stats?.totalUsers ?? '—'} color="bg-brand-500" sub="Kayıtlı kullanıcılar" />
         <StatCard icon={MessageSquare} label="Bugünkü Mesajlar" value={stats?.messagesToday ?? '—'} color="bg-purple-500" sub="Tüm kanallarda" />
         <StatCard icon={Mail} label="Bugünkü E-postalar" value={stats?.emailsToday ?? '—'} color="bg-green-500" sub="Gelen + giden" />
@@ -304,19 +304,19 @@ function UsersTab() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="relative">
+    <div className="p-3 md:p-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="relative flex-1 md:flex-initial">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Kullanıcı ara..."
-            className="input-field pl-8 w-64"
+            className="input-field pl-8 w-full md:w-64"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-gray-500">{total} kullanıcı</span>
           <button onClick={fetchUsers} className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded transition-all">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -454,31 +454,31 @@ function LogsTab() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="relative">
+    <div className="p-3 md:p-6">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4">
+        <div className="relative w-full sm:w-auto">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Kullanıcı veya işlem ara..."
-            className="input-field pl-8 w-56"
+            className="input-field pl-8 w-full sm:w-56"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <input
             type="date"
             value={dateFrom}
             onChange={e => { setDateFrom(e.target.value); setPage(1) }}
-            className="input-field text-xs py-2 w-36"
+            className="input-field text-xs py-2 flex-1 sm:w-36"
           />
           <span className="text-gray-500 text-xs">—</span>
           <input
             type="date"
             value={dateTo}
             onChange={e => { setDateTo(e.target.value); setPage(1) }}
-            className="input-field text-xs py-2 w-36"
+            className="input-field text-xs py-2 flex-1 sm:w-36"
           />
         </div>
         <button
@@ -488,7 +488,7 @@ function LogsTab() {
           <X size={13} />
           Temizle
         </button>
-        <span className="text-xs text-gray-500 ml-auto">{total} kayıt</span>
+        <span className="text-xs text-gray-500 sm:ml-auto">{total} kayıt</span>
       </div>
 
       <div className="card overflow-hidden">
@@ -590,16 +590,16 @@ function EmailTrafficTab() {
   useEffect(() => { fetchEmails() }, [fetchEmails])
 
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="relative">
+    <div className="p-3 md:p-6">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4">
+        <div className="relative w-full sm:w-auto">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1) }}
             placeholder="Gönderen, alıcı veya konu ara..."
-            className="input-field pl-8 w-64"
+            className="input-field pl-8 w-full sm:w-64"
           />
         </div>
         <div className="flex gap-1">
@@ -727,19 +727,19 @@ function MailSettingsTab() {
   )
 
   return (
-    <div className="p-6 max-w-2xl space-y-6">
+    <div className="p-3 md:p-6 max-w-2xl space-y-6">
       <div>
         <h2 className="text-base font-semibold text-white mb-0.5">Mail Sunucu Ayarları</h2>
         <p className="text-xs text-gray-400">Gönderme (SMTP) ve alma (IMAP) sunucu bilgilerini girin.</p>
       </div>
 
       {/* SMTP */}
-      <div className="card p-5 space-y-4">
+      <div className="card p-4 md:p-5 space-y-4">
         <div className="flex items-center gap-2 pb-1 border-b border-surface-border">
           <ArrowUp size={14} className="text-gray-400" />
           <h3 className="text-sm font-semibold text-white">SMTP — Giden Posta</h3>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-gray-400 mb-1.5">Sunucu Adresi</label>
             <input name="smtp_host" value={form.smtp_host} onChange={handleChange} className="input-field" placeholder="mail.genexa.com.tr" />
@@ -761,9 +761,9 @@ function MailSettingsTab() {
               </button>
             </div>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1 sm:col-span-2">
             <label className="block text-xs text-gray-400 mb-1.5">Güvenlik</label>
-            <select name="smtp_secure" value={form.smtp_secure} onChange={handleChange} className="input-field max-w-xs">
+            <select name="smtp_secure" value={form.smtp_secure} onChange={handleChange} className="input-field w-full sm:max-w-xs">
               <option value="false" className="bg-surface-card">STARTTLS (Port 587)</option>
               <option value="true" className="bg-surface-card">SSL/TLS (Port 465)</option>
             </select>
@@ -772,12 +772,12 @@ function MailSettingsTab() {
       </div>
 
       {/* IMAP */}
-      <div className="card p-5 space-y-4">
+      <div className="card p-4 md:p-5 space-y-4">
         <div className="flex items-center gap-2 pb-1 border-b border-surface-border">
           <ArrowDown size={14} className="text-gray-400" />
           <h3 className="text-sm font-semibold text-white">IMAP — Gelen Posta</h3>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-gray-400 mb-1.5">Sunucu Adresi</label>
             <input name="imap_host" value={form.imap_host} onChange={handleChange} className="input-field" placeholder="mail.genexa.com.tr" />
@@ -820,20 +820,20 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Tab navigation */}
+      {/* Tab navigation - scrollable on mobile */}
       <div className="flex-shrink-0 border-b border-surface-border bg-surface-sidebar/30">
-        <div className="flex items-center px-6 gap-1 pt-3">
+        <div className="flex items-center px-3 md:px-6 gap-1 pt-3 overflow-x-auto scrollbar-hide">
           {TABS.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-all border-b-2 -mb-px ${
+              className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium rounded-t-lg transition-all border-b-2 -mb-px whitespace-nowrap flex-shrink-0 min-h-[44px] ${
                 activeTab === key
                   ? 'border-brand-500 text-brand-400 bg-brand-500/5'
                   : 'border-transparent text-gray-500 hover:text-gray-300 hover:bg-surface-card'
               }`}
             >
-              <Icon size={15} />
+              <Icon size={14} />
               {label}
             </button>
           ))}

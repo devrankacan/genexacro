@@ -141,13 +141,16 @@ function VideoGrid({ peers, localStream, localUser }) {
   }, [localStream])
 
   const totalPeers = peers.length + 1
-  const cols = totalPeers <= 1 ? 1 : totalPeers <= 4 ? 2 : 3
+  // Responsive: 1 col on mobile, calculated on desktop
+  const mdCols = totalPeers <= 1 ? 1 : totalPeers <= 4 ? 2 : 3
+  const gridClass = mdCols === 1
+    ? 'grid-cols-1'
+    : mdCols === 2
+    ? 'grid-cols-1 md:grid-cols-2'
+    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
 
   return (
-    <div
-      className={`grid gap-3 h-full`}
-      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-    >
+    <div className={`grid gap-3 h-full ${gridClass}`}>
       {/* Local video */}
       <div className="relative bg-surface-card rounded-xl overflow-hidden border border-surface-border group">
         <video
@@ -421,19 +424,19 @@ export default function MeetingPage() {
     return (
       <div className="flex flex-col h-full bg-[#0a0b10]">
         {/* Meeting header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 bg-surface-sidebar border-b border-surface-border">
-          <div className="flex items-center gap-3">
-            <Video size={16} className="text-brand-400" />
-            <span className="font-semibold text-white text-sm">{activeRoom.name}</span>
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-surface-card border border-surface-border rounded-full">
+        <div className="flex-shrink-0 flex items-center justify-between px-3 md:px-5 py-3 bg-surface-sidebar border-b border-surface-border">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Video size={16} className="text-brand-400 flex-shrink-0" />
+            <span className="font-semibold text-white text-sm truncate">{activeRoom.name}</span>
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 bg-surface-card border border-surface-border rounded-full flex-shrink-0">
               <Users size={12} className="text-gray-500" />
               <span className="text-xs text-gray-400">{peers.length + 1} katılımcı</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={copyRoomCode}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-card border border-surface-border rounded-lg text-xs text-gray-400 hover:text-white hover:border-brand-500/40 transition-all"
+              className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 bg-surface-card border border-surface-border rounded-lg text-xs text-gray-400 hover:text-white hover:border-brand-500/40 transition-all min-h-[44px]"
             >
               {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
               <span className="font-mono">{activeRoom.code}</span>
@@ -447,50 +450,50 @@ export default function MeetingPage() {
         </div>
 
         {/* Controls */}
-        <div className="flex-shrink-0 flex items-center justify-center gap-3 py-4 bg-surface-sidebar border-t border-surface-border">
+        <div className="flex-shrink-0 flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 px-3 bg-surface-sidebar border-t border-surface-border flex-wrap">
           <button
             onClick={toggleMic}
-            className={`flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 px-3 md:px-5 py-2.5 rounded-xl transition-all min-h-[56px] min-w-[64px] ${
               micOn
                 ? 'bg-surface-card border border-surface-border text-gray-200 hover:bg-surface-elevated'
                 : 'bg-red-500/20 border border-red-500/30 text-red-300'
             }`}
           >
-            {micOn ? <Mic size={18} /> : <MicOff size={18} />}
+            {micOn ? <Mic size={20} /> : <MicOff size={20} />}
             <span className="text-[10px]">{micOn ? 'Sessiz' : 'Sesli'}</span>
           </button>
 
           <button
             onClick={toggleCam}
-            className={`flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 px-3 md:px-5 py-2.5 rounded-xl transition-all min-h-[56px] min-w-[64px] ${
               camOn
                 ? 'bg-surface-card border border-surface-border text-gray-200 hover:bg-surface-elevated'
                 : 'bg-red-500/20 border border-red-500/30 text-red-300'
             }`}
           >
-            {camOn ? <Video size={18} /> : <VideoOff size={18} />}
+            {camOn ? <Video size={20} /> : <VideoOff size={20} />}
             <span className="text-[10px]">{camOn ? 'Kamerayı Kapat' : 'Kamerayı Aç'}</span>
           </button>
 
           <button
             onClick={toggleScreenShare}
-            className={`flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-all ${
+            className={`hidden sm:flex flex-col items-center gap-1 px-3 md:px-5 py-2.5 rounded-xl transition-all min-h-[56px] min-w-[64px] ${
               screenSharing
                 ? 'bg-brand-500/20 border border-brand-500/40 text-brand-300'
                 : 'bg-surface-card border border-surface-border text-gray-200 hover:bg-surface-elevated'
             }`}
           >
-            <MonitorUp size={18} />
+            <MonitorUp size={20} />
             <span className="text-[10px]">{screenSharing ? 'Paylaşımı Durdur' : 'Ekran Paylaş'}</span>
           </button>
 
-          <div className="w-px h-10 bg-surface-border mx-1" />
+          <div className="w-px h-10 bg-surface-border mx-1 hidden sm:block" />
 
           <button
             onClick={leaveRoom}
-            className="flex flex-col items-center gap-1 px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all"
+            className="flex flex-col items-center gap-1 px-4 md:px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all min-h-[56px] min-w-[64px]"
           >
-            <PhoneOff size={18} />
+            <PhoneOff size={20} />
             <span className="text-[10px]">Ayrıl</span>
           </button>
         </div>
@@ -501,36 +504,37 @@ export default function MeetingPage() {
   // Lobby view
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="p-6 max-w-5xl mx-auto w-full">
+      <div className="p-4 md:p-6 max-w-5xl mx-auto w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5 md:mb-6">
           <div>
             <h2 className="text-lg font-bold text-white">Video Toplantılar</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Toplantı oluşturun veya mevcut bir odaya katılın</p>
+            <p className="hidden sm:block text-sm text-gray-500 mt-0.5">Toplantı oluşturun veya mevcut bir odaya katılın</p>
           </div>
           <button
             onClick={() => setShowCreateRoom(true)}
-            className="btn-primary"
+            className="btn-primary min-h-[44px]"
           >
             <Plus size={16} />
-            Yeni Toplantı
+            <span className="hidden sm:inline">Yeni Toplantı</span>
+            <span className="sm:hidden">Yeni</span>
           </button>
         </div>
 
         {/* Join by code */}
-        <div className="card p-5 mb-6">
+        <div className="card p-4 md:p-5 mb-5 md:mb-6">
           <h3 className="text-sm font-semibold text-white mb-3">Kod ile Katıl</h3>
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <input
               type="text"
               value={joinCode}
               onChange={e => setJoinCode(e.target.value.toUpperCase())}
               placeholder="Oda kodunu girin (örn: ABC123)"
-              className="input-field font-mono tracking-wider flex-1"
+              className="input-field font-mono tracking-wider flex-1 min-h-[44px]"
               maxLength={8}
               onKeyDown={e => e.key === 'Enter' && handleJoinByCode()}
             />
-            <button onClick={handleJoinByCode} className="btn-primary flex-shrink-0">
+            <button onClick={handleJoinByCode} className="btn-primary flex-shrink-0 min-h-[44px]">
               <ExternalLink size={15} />
               Katıl
             </button>

@@ -235,12 +235,16 @@ export default function WebmailPage() {
   })
 
   return (
-    <div className="flex h-full">
-      {/* Folder sidebar */}
-      <div className="w-48 flex-shrink-0 bg-surface-sidebar border-r border-surface-border flex flex-col py-4 px-3 gap-1">
+    <div className="flex h-full overflow-hidden">
+      {/* Folder sidebar - shown on mobile only when mobileView === 'folders', always on md+ */}
+      <div className={`
+        flex-shrink-0 bg-surface-sidebar border-r border-surface-border flex-col py-4 px-3 gap-1
+        ${mobileView === 'folders' ? 'flex w-full' : 'hidden'}
+        md:flex md:w-48
+      `}>
         <button
           onClick={() => setShowCompose(true)}
-          className="btn-primary text-xs mb-3 justify-center"
+          className="btn-primary text-xs mb-3 justify-center min-h-[44px]"
         >
           <Plus size={14} />
           Yeni E-posta
@@ -253,7 +257,7 @@ export default function WebmailPage() {
               setActiveFolder(key)
               setPage(1)
             }}
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`flex items-center gap-2.5 px-3 py-3 rounded-lg text-sm transition-all min-h-[44px] ${
               activeFolder === key
                 ? 'bg-brand-500/15 text-brand-300 font-medium'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-surface-card'
@@ -281,15 +285,25 @@ export default function WebmailPage() {
         </div>
       </div>
 
-      {/* Email list */}
+      {/* Email list - shown on mobile only when mobileView === 'list', always on md+ */}
       <div
-        className={`flex flex-col border-r border-surface-border ${
-          selectedEmail ? 'w-72 flex-shrink-0' : 'flex-1'
-        }`}
+        className={`
+          flex-col border-r border-surface-border
+          ${mobileView === 'list' ? 'flex flex-1' : 'hidden'}
+          md:flex
+          ${selectedEmail ? 'md:w-72 md:flex-shrink-0' : 'md:flex-1'}
+        `}
       >
         {/* Search + toolbar */}
         <div className="px-4 py-3 border-b border-surface-border bg-[#0f1117]">
           <div className="flex items-center gap-2">
+            {/* Back to folders button - mobile only */}
+            <button
+              onClick={() => setMobileView('folders')}
+              className="md:hidden p-2 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            >
+              <ChevronLeft size={16} />
+            </button>
             <div className="relative flex-1">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
@@ -396,14 +410,24 @@ export default function WebmailPage() {
         </div>
       </div>
 
-      {/* Email viewer */}
+      {/* Email viewer - shown on mobile only when mobileView === 'detail', always on md+ */}
       {selectedEmail ? (
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="px-6 py-4 border-b border-surface-border flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className={`
+          flex-1 flex-col min-w-0 overflow-hidden
+          ${mobileView === 'detail' ? 'flex' : 'hidden'}
+          md:flex
+        `}>
+          <div className="px-4 md:px-6 py-4 border-b border-surface-border flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <button
+                onClick={() => setMobileView('list')}
+                className="p-2 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all md:hidden flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <ChevronLeft size={16} />
+              </button>
               <button
                 onClick={() => setSelectedEmail(null)}
-                className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all md:hidden"
+                className="hidden md:flex p-1.5 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -411,34 +435,34 @@ export default function WebmailPage() {
                 {selectedEmail.subject || '(Konu yok)'}
               </h3>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="btn-secondary text-xs py-1.5 px-3">
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+              <button className="btn-secondary text-xs py-1.5 px-2 md:px-3">
                 <Reply size={13} />
-                Yanıtla
+                <span className="hidden sm:inline">Yanıtla</span>
               </button>
-              <button className="btn-secondary text-xs py-1.5 px-3">
+              <button className="btn-secondary text-xs py-1.5 px-2 md:px-3">
                 <Forward size={13} />
-                İlet
+                <span className="hidden sm:inline">İlet</span>
               </button>
               <button
                 onClick={() => {
                   handleDelete(selectedEmail._id)
                 }}
-                className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <Trash2 size={15} />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 py-5">
             {/* Email meta */}
-            <div className="bg-surface-card rounded-xl border border-surface-border p-5 mb-5">
-              <div className="grid grid-cols-[80px_1fr] gap-y-2 text-sm">
+            <div className="bg-surface-card rounded-xl border border-surface-border p-4 md:p-5 mb-5">
+              <div className="grid grid-cols-[70px_1fr] md:grid-cols-[80px_1fr] gap-y-2 text-sm">
                 <span className="text-gray-500 font-medium">Gönderen:</span>
-                <span className="text-gray-200">{selectedEmail.fromName || selectedEmail.from}</span>
+                <span className="text-gray-200 break-all">{selectedEmail.fromName || selectedEmail.from}</span>
                 <span className="text-gray-500 font-medium">Alıcı:</span>
-                <span className="text-gray-200">{selectedEmail.to}</span>
+                <span className="text-gray-200 break-all">{selectedEmail.to}</span>
                 <span className="text-gray-500 font-medium">Tarih:</span>
                 <span className="text-gray-400 flex items-center gap-1.5">
                   <Clock size={12} />
@@ -456,10 +480,10 @@ export default function WebmailPage() {
             </div>
 
             {/* Email body */}
-            <div className="bg-surface-card rounded-xl border border-surface-border p-5">
+            <div className="bg-surface-card rounded-xl border border-surface-border p-4 md:p-5">
               {selectedEmail.htmlBody ? (
                 <div
-                  className="prose prose-invert prose-sm max-w-none text-gray-300 leading-relaxed"
+                  className="prose prose-invert prose-sm max-w-none text-gray-300 leading-relaxed overflow-x-auto"
                   dangerouslySetInnerHTML={{ __html: selectedEmail.htmlBody }}
                 />
               ) : (
@@ -490,7 +514,7 @@ export default function WebmailPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="hidden md:flex flex-1 items-center justify-center">
           <div className="text-center">
             <MailOpen size={48} className="mx-auto text-gray-700 mb-3" />
             <p className="text-sm text-gray-500">Okumak için bir e-posta seçin</p>

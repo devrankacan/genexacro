@@ -9,6 +9,7 @@ import {
   Lock,
   Search,
   ChevronDown,
+  ChevronLeft,
   Users,
   X,
   AtSign,
@@ -356,11 +357,17 @@ export default function ChatPage() {
     : 'Sohbet'
 
   const activeDesc = activeChannel?.description || (activeDM ? activeDM.department : '')
+  // On mobile, show sidebar if no channel/DM selected; show chat area if one is selected
+  const mobileShowSidebar = !activeChannel && !activeDM
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       {/* Channels sidebar */}
-      <div className="w-56 flex-shrink-0 bg-surface-sidebar border-r border-surface-border flex flex-col py-3">
+      <div className={`
+        flex-shrink-0 bg-surface-sidebar border-r border-surface-border flex-col py-3
+        ${mobileShowSidebar ? 'flex w-full' : 'hidden'}
+        md:flex md:w-56
+      `}>
         {/* Channels section */}
         <div className="px-3 mb-1">
           <div className="flex items-center justify-between px-2 py-1">
@@ -437,11 +444,22 @@ export default function ChatPage() {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className={`
+        flex-1 flex-col min-w-0
+        ${!mobileShowSidebar ? 'flex' : 'hidden'}
+        md:flex
+      `}>
         {/* Chat header */}
         {(activeChannel || activeDM) && (
-          <div className="h-14 flex-shrink-0 flex items-center justify-between px-5 border-b border-surface-border bg-[#0f1117]">
-            <div className="flex items-center gap-2.5">
+          <div className="h-14 flex-shrink-0 flex items-center justify-between px-3 md:px-5 border-b border-surface-border bg-[#0f1117]">
+            <div className="flex items-center gap-2 md:gap-2.5">
+              {/* Back button - mobile only */}
+              <button
+                onClick={() => { setActiveChannel(null); setActiveDM(null) }}
+                className="md:hidden p-2 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
+              >
+                <ChevronLeft size={16} />
+              </button>
               {activeChannel ? (
                 <Hash size={18} className="text-gray-400" />
               ) : (

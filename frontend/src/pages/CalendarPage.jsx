@@ -67,16 +67,16 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content max-w-lg w-full animate-fade-in">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-border">
+      <div className="modal-content w-full max-w-lg mx-3 md:mx-auto animate-fade-in md:max-h-[90vh] max-h-screen md:rounded-xl rounded-t-xl mt-auto md:mt-0 md:my-auto">
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-surface-border">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: form.color }} />
             <h3 className="font-semibold text-white">{isNew ? 'Yeni Etkinlik' : 'Etkinlik Düzenle'}</h3>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white"><X size={18} /></button>
+          <button onClick={onClose} className="text-gray-500 hover:text-white p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"><X size={18} /></button>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 md:p-6 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
           <div>
             <label className="block text-xs text-gray-400 mb-1.5 font-medium">Başlık *</label>
             <input
@@ -89,7 +89,7 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1.5 font-medium">Başlangıç *</label>
               <input
@@ -178,13 +178,13 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between px-6 py-4 border-t border-surface-border">
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 border-t border-surface-border">
           <div>
             {!isNew && (
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="btn-danger text-xs py-1.5"
+                className="btn-danger text-xs py-1.5 min-h-[44px]"
               >
                 <Trash2 size={13} />
                 {deleting ? 'Siliniyor...' : 'Sil'}
@@ -192,8 +192,8 @@ function EventModal({ event, onClose, onSave, onDelete, isNew }) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={onClose} className="btn-secondary text-xs py-1.5">İptal</button>
-            <button onClick={handleSave} disabled={saving} className="btn-primary text-xs py-1.5">
+            <button onClick={onClose} className="btn-secondary text-xs py-1.5 min-h-[44px]">İptal</button>
+            <button onClick={handleSave} disabled={saving} className="btn-primary text-xs py-1.5 min-h-[44px]">
               {saving ? 'Kaydediliyor...' : isNew ? 'Oluştur' : 'Kaydet'}
             </button>
           </div>
@@ -210,6 +210,7 @@ export default function CalendarPage() {
   const [modalEvent, setModalEvent] = useState(null)
   const [modalIsNew, setModalIsNew] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   const fetchEvents = useCallback(async () => {
     setLoading(true)
@@ -305,11 +306,11 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="flex flex-col h-full p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-full p-3 md:p-5">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
         <div>
           <h2 className="text-lg font-bold text-white">Takvim</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Ekip toplantılarını ve etkinliklerini yönetin</p>
+          <p className="hidden sm:block text-xs text-gray-500 mt-0.5">Ekip toplantılarını ve etkinliklerini yönetin</p>
         </div>
         <button
           onClick={() => {
@@ -324,14 +325,15 @@ export default function CalendarPage() {
             setModalIsNew(true)
             setShowModal(true)
           }}
-          className="btn-primary"
+          className="btn-primary min-h-[44px]"
         >
           <Plus size={16} />
-          Etkinlik Ekle
+          <span className="hidden sm:inline">Etkinlik Ekle</span>
+          <span className="sm:hidden">Ekle</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden card p-4">
+      <div className="flex-1 overflow-hidden card p-2 md:p-4 relative">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-surface-card/50 rounded-xl z-10">
             <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
@@ -340,12 +342,12 @@ export default function CalendarPage() {
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
+          initialView={isMobile ? 'timeGridWeek' : 'dayGridMonth'}
           locale="tr"
           headerToolbar={{
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay',
+            right: isMobile ? 'timeGridWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay',
           }}
           buttonText={{
             today: 'Bugün',
@@ -360,7 +362,7 @@ export default function CalendarPage() {
           editable={true}
           selectable={true}
           selectMirror={true}
-          dayMaxEvents={3}
+          dayMaxEvents={isMobile ? 2 : 3}
           weekends={true}
           eventTimeFormat={{
             hour: '2-digit',

@@ -112,6 +112,7 @@ export default function NotesPage() {
   const [filter, setFilter] = useState('all') // all, personal, shared
   const [saving, setSaving] = useState(false)
   const [savedRecently, setSavedRecently] = useState(false)
+  const [mobileView, setMobileView] = useState('list') // 'list' | 'editor'
   const saveTimerRef = useRef(null)
   const saveStatusTimerRef = useRef(null)
 
@@ -195,6 +196,7 @@ export default function NotesPage() {
   const selectNote = (note) => {
     setActiveNote(note)
     editor?.commands.setContent(note.content || '', false)
+    setMobileView('editor')
   }
 
   const deleteNote = async (noteId, e) => {
@@ -248,9 +250,13 @@ export default function NotesPage() {
   })
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       {/* Notes list sidebar */}
-      <div className="w-64 flex-shrink-0 bg-surface-sidebar border-r border-surface-border flex flex-col">
+      <div className={`
+        flex-shrink-0 bg-surface-sidebar border-r border-surface-border flex-col
+        ${mobileView === 'list' ? 'flex w-full' : 'hidden'}
+        md:flex md:w-64
+      `}>
         {/* Header */}
         <div className="px-3 py-3 border-b border-surface-border">
           <button onClick={createNote} className="btn-primary text-xs w-full justify-center mb-3 py-2">
@@ -354,30 +360,41 @@ export default function NotesPage() {
 
       {/* Editor area */}
       {activeNote ? (
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className={`
+          flex-1 flex-col min-w-0 overflow-hidden
+          ${mobileView === 'editor' ? 'flex' : 'hidden'}
+          md:flex
+        `}>
           {/* Note title + meta */}
-          <div className="flex-shrink-0 px-6 py-3 border-b border-surface-border flex items-center justify-between">
+          <div className="flex-shrink-0 px-3 md:px-6 py-3 border-b border-surface-border flex items-center justify-between gap-2">
+            {/* Back button - mobile only */}
+            <button
+              onClick={() => setMobileView('list')}
+              className="md:hidden p-2 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            >
+              <ChevronRight size={16} className="rotate-180" />
+            </button>
             <input
               type="text"
               defaultValue={activeNote.title}
               onBlur={e => updateTitle(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-              className="bg-transparent text-lg font-bold text-white focus:outline-none border-b border-transparent focus:border-surface-border pb-0.5 transition-all flex-1 mr-4"
+              className="bg-transparent text-base md:text-lg font-bold text-white focus:outline-none border-b border-transparent focus:border-surface-border pb-0.5 transition-all flex-1 min-w-0"
               placeholder="Not başlığı..."
             />
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
               {saving ? (
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="hidden sm:flex text-xs text-gray-500 items-center gap-1">
                   <div className="w-3 h-3 border border-gray-500 border-t-gray-300 rounded-full animate-spin" />
                   Kaydediliyor...
                 </span>
               ) : savedRecently ? (
-                <span className="text-xs text-green-500 flex items-center gap-1">
+                <span className="hidden sm:flex text-xs text-green-500 items-center gap-1">
                   <Save size={12} />
                   Kaydedildi
                 </span>
               ) : (
-                <span className="text-xs text-gray-600 flex items-center gap-1">
+                <span className="hidden sm:flex text-xs text-gray-600 items-center gap-1">
                   <Clock size={11} />
                   {formatNoteDate(activeNote.updatedAt || activeNote.createdAt)}
                 </span>
@@ -385,19 +402,19 @@ export default function NotesPage() {
 
               <button
                 onClick={e => toggleShared(activeNote._id, activeNote.shared, e)}
-                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                className={`flex items-center gap-1.5 text-xs px-2 md:px-3 py-1.5 rounded-lg border transition-all min-h-[44px] ${
                   activeNote.shared
                     ? 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20'
                     : 'bg-surface-card border-surface-border text-gray-400 hover:text-gray-200'
                 }`}
               >
                 {activeNote.shared ? <Share2 size={13} /> : <Lock size={13} />}
-                {activeNote.shared ? 'Paylaşılan' : 'Kişisel'}
+                <span className="hidden sm:inline">{activeNote.shared ? 'Paylaşılan' : 'Kişisel'}</span>
               </button>
 
               <button
                 onClick={e => deleteNote(activeNote._id, e)}
-                className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <Trash2 size={15} />
               </button>
@@ -408,7 +425,7 @@ export default function NotesPage() {
           <EditorToolbar editor={editor} />
 
           {/* Editor */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4">
             <EditorContent
               editor={editor}
               className="min-h-full text-gray-300 leading-relaxed"
@@ -416,7 +433,7 @@ export default function NotesPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="hidden md:flex flex-1 items-center justify-center">
           <div className="text-center">
             <FileText size={52} className="mx-auto text-gray-700 mb-3" />
             <p className="text-gray-500 mb-1">Bir not seçin veya oluşturun</p>

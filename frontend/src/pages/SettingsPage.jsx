@@ -107,7 +107,7 @@ export default function SettingsPage() {
           {/* Logo upload */}
           <div>
             <label className="block text-xs text-gray-400 mb-2">Şirket Logosu</label>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="w-16 h-16 rounded-xl border border-surface-border bg-surface-elevated flex items-center justify-center overflow-hidden flex-shrink-0">
                 {logo ? (
                   <img src={logo} alt="Logo" className="w-full h-full object-contain p-1" />
@@ -115,11 +115,11 @@ export default function SettingsPage() {
                   <Image size={24} className="text-gray-600" />
                 )}
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 w-full sm:w-auto">
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
-                  className="btn-secondary text-sm py-1.5 px-3"
+                  className="btn-secondary text-sm py-1.5 px-3 min-h-[44px] w-full sm:w-auto"
                 >
                   {uploading ? (
                     <><RefreshCw size={14} className="animate-spin" /> Yükleniyor...</>
@@ -128,7 +128,7 @@ export default function SettingsPage() {
                   )}
                 </button>
                 {logo && (
-                  <button onClick={removeLogo} className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300">
+                  <button onClick={removeLogo} className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 min-h-[44px]">
                     <Trash2 size={12} /> Logoyu kaldır
                   </button>
                 )}
@@ -190,7 +190,7 @@ export default function SettingsPage() {
                 type="color"
                 value={color}
                 onChange={e => setColor(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-surface-border cursor-pointer bg-transparent p-0.5"
+                className="w-11 h-11 rounded-lg border border-surface-border cursor-pointer bg-transparent p-0.5 flex-shrink-0"
               />
               <input
                 type="text"
@@ -203,7 +203,7 @@ export default function SettingsPage() {
                 placeholder="#3b82f6"
               />
               <div
-                className="flex-1 min-w-[80px] h-10 rounded-lg border border-surface-border flex items-center justify-center text-sm font-medium transition-all"
+                className="flex-1 min-w-[80px] h-11 rounded-lg border border-surface-border flex items-center justify-center text-sm font-medium transition-all"
                 style={{ backgroundColor: color, color: 'var(--accent-text)' }}
               >
                 Önizleme
@@ -250,7 +250,7 @@ export default function SettingsPage() {
 
         {/* Save button */}
         <div className="flex justify-end">
-          <button onClick={handleSave} disabled={saving} className="btn-primary">
+          <button onClick={handleSave} disabled={saving} className="btn-primary w-full sm:w-auto min-h-[44px]">
             {saving ? <><RefreshCw size={15} className="animate-spin" /> Kaydediliyor...</> : <><Check size={15} /> Kaydet</>}
           </button>
         </div>
