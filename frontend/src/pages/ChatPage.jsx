@@ -5,17 +5,12 @@ import {
   Plus,
   Send,
   Paperclip,
-  Smile,
   Lock,
   Search,
-  ChevronDown,
   ChevronLeft,
   Users,
   X,
   AtSign,
-  MoreHorizontal,
-  Check,
-  Circle,
 } from 'lucide-react'
 import { format, isToday, isYesterday, parseISO } from 'date-fns'
 import { tr } from 'date-fns/locale'
@@ -109,8 +104,8 @@ function NewDMModal({ onClose, onSelect, currentUserId }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/api/admin/users').then(res => {
-      setUsers((res.data.users || res.data || []).filter(u => u._id !== currentUserId))
+    api.get('/api/chat/users').then(res => {
+      setUsers((res.data.users || res.data || []).filter(u => u.id !== currentUserId))
     }).catch(() => {}).finally(() => setLoading(false))
   }, [currentUserId])
 
@@ -136,7 +131,7 @@ function NewDMModal({ onClose, onSelect, currentUserId }) {
               <div className="py-6 text-center text-sm text-gray-500">Yükleniyor...</div>
             ) : filtered.map(u => (
               <button
-                key={u._id}
+                key={u.id}
                 onClick={() => { onSelect(u); onClose() }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-elevated transition-all text-left"
               >
@@ -210,7 +205,7 @@ export default function ChatPage() {
       try {
         let url
         if (activeChannel) {
-          url = `/api/chat/channels/${activeChannel._id}/messages`
+          url = `/api/chat/channels/${activeChannel.id}/messages`
         } else if (activeDM) {
           url = `/api/chat/dms/${activeDM.userId}/messages`
         }
@@ -227,48 +222,46 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket) return
 
-    const roomId = activeChannel ? `channel:${activeChannel._id}` : activeDM ? `dm:${activeDM.userId}` : null
+    const activeChannelId = activeChannel?.id || null
 
-    if (roomId) {
-      socket.emit('join', { room: roomId })
-    }
-
-    socket.on('new_message', (msg) => {
-      const msgRoom = msg.channelId ? `channel:${msg.channelId}` : `dm:${msg.dmUserId}`
-      if (msgRoom === roomId) {
+    socket.on('message:new', (msg) => {
+      if (msg.channel_id === activeChannelId) {
         setMessages(prev => {
-          if (prev.find(m => m._id === msg._id)) return prev
+          if (prev.find(m => m.id === msg.id)) return prev
           return [...prev, msg]
         })
       } else {
-        setUnread(prev => ({ ...prev, [msgRoom]: (prev[msgRoom] || 0) + 1 }))
+        setUnread(prev => ({ ...prev, [msg.channel_id]: (prev[msg.channel_id] || 0) + 1 }))
       }
     })
 
-    socket.on('typing', ({ userId, userName, room }) => {
-      if (room === roomId && userId !== user?._id) {
-        setTypingUsers(prev => {
-          if (prev.find(u => u.userId === userId)) return prev
-          return [...prev, { userId, userName }]
-        })
-        clearTimeout(typingTimeoutRef.current)
-        typingTimeoutRef.current = setTimeout(() => {
+    socket.on('message:typing', ({ channelId, userId, userName, isTyping }) => {
+      if (channelId === activeChannelId && userId !== user?.id) {
+        if (isTyping) {
+          setTypingUsers(prev => {
+            if (prev.find(u => u.userId === userId)) return prev
+            return [...prev, { userId, userName }]
+          })
+          clearTimeout(typingTimeoutRef.current)
+          typingTimeoutRef.current = setTimeout(() => {
+            setTypingUsers(prev => prev.filter(u => u.userId !== userId))
+          }, 3000)
+        } else {
           setTypingUsers(prev => prev.filter(u => u.userId !== userId))
-        }, 3000)
+        }
       }
     })
 
-    socket.on('online_users', (users) => {
-      setOnlineUsers(users || [])
+    socket.on('users:online', ({ userIds }) => {
+      setOnlineUsers(userIds || [])
     })
 
     return () => {
-      if (roomId) socket.emit('leave', { room: roomId })
-      socket.off('new_message')
-      socket.off('typing')
-      socket.off('online_users')
+      socket.off('message:new')
+      socket.off('message:typing')
+      socket.off('users:online')
     }
-  }, [socket, activeChannel, activeDM, user])
+  }, [socket, activeChannel, user])
 
   const handleSend = async () => {
     if (!input.trim() && !sending) return
@@ -278,14 +271,14 @@ export default function ChatPage() {
     try {
       let res
       if (activeChannel) {
-        res = await api.post(`/api/chat/channels/${activeChannel._id}/messages`, { content: text })
+        res = await api.post(`/api/chat/channels/${activeChannel.id}/messages`, { content: text })
       } else if (activeDM) {
         res = await api.post(`/api/chat/dms/${activeDM.userId}/messages`, { content: text })
       }
       if (res?.data) {
         const msg = res.data.message || res.data
         setMessages(prev => {
-          if (prev.find(m => m._id === msg._id)) return prev
+          if (prev.find(m => m.id === msg.id)) return prev
           return [...prev, msg]
         })
       }
@@ -302,10 +295,8 @@ export default function ChatPage() {
       e.preventDefault()
       handleSend()
     }
-    // Emit typing
-    if (socket && (activeChannel || activeDM)) {
-      const room = activeChannel ? `channel:${activeChannel._id}` : `dm:${activeDM.userId}`
-      socket.emit('typing', { room, userId: user?._id, userName: user?.name })
+    if (socket && activeChannel) {
+      socket.emit('message:typing', { channelId: activeChannel.id, isTyping: true })
     }
   }
 
@@ -313,22 +304,22 @@ export default function ChatPage() {
     const file = e.target.files?.[0]
     if (!file) return
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('files', file)
     try {
-      const res = await api.post('/api/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-      const fileUrl = res.data.url || res.data.path
+      const res = await api.post('/api/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const fileUrl = res.data.files?.[0]?.url || res.data.url
       const fileName = file.name
-      let msgRes
       const content = `[${fileName}](${fileUrl})`
+      let msgRes
       if (activeChannel) {
-        msgRes = await api.post(`/api/chat/channels/${activeChannel._id}/messages`, { content, fileUrl, fileName })
+        msgRes = await api.post(`/api/chat/channels/${activeChannel.id}/messages`, { content, fileUrl, fileName })
       } else if (activeDM) {
         msgRes = await api.post(`/api/chat/dms/${activeDM.userId}/messages`, { content, fileUrl, fileName })
       }
       if (msgRes?.data) {
         const msg = msgRes.data.message || msgRes.data
         setMessages(prev => {
-          if (prev.find(m => m._id === msg._id)) return prev
+          if (prev.find(m => m.id === msg.id)) return prev
           return [...prev, msg]
         })
       }
@@ -342,6 +333,7 @@ export default function ChatPage() {
     setActiveChannel(ch)
     setActiveDM(null)
     setTypingUsers([])
+    setUnread(prev => { const n = { ...prev }; delete n[ch.id]; return n })
   }
 
   const selectDM = (dm) => {
@@ -357,7 +349,6 @@ export default function ChatPage() {
     : 'Sohbet'
 
   const activeDesc = activeChannel?.description || (activeDM ? activeDM.department : '')
-  // On mobile, show sidebar if no channel/DM selected; show chat area if one is selected
   const mobileShowSidebar = !activeChannel && !activeDM
 
   return (
@@ -382,18 +373,18 @@ export default function ChatPage() {
           <div className="space-y-0.5 mt-1">
             {channels.map(ch => (
               <button
-                key={ch._id}
+                key={ch.id}
                 onClick={() => selectChannel(ch)}
                 className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all ${
-                  activeChannel?._id === ch._id
+                  activeChannel?.id === ch.id
                     ? 'bg-brand-500/15 text-white font-medium'
                     : 'text-gray-400 hover:text-gray-200 hover:bg-surface-card'
                 }`}
               >
                 <Hash size={14} className="flex-shrink-0" />
                 <span className="truncate flex-1 text-left">{ch.name}</span>
-                {unread[`channel:${ch._id}`] > 0 && (
-                  <span className="badge-blue text-[10px]">{unread[`channel:${ch._id}`]}</span>
+                {unread[ch.id] > 0 && (
+                  <span className="badge-blue text-[10px]">{unread[ch.id]}</span>
                 )}
               </button>
             ))}
@@ -453,7 +444,6 @@ export default function ChatPage() {
         {(activeChannel || activeDM) && (
           <div className="h-14 flex-shrink-0 flex items-center justify-between px-3 md:px-5 border-b border-surface-border bg-surface">
             <div className="flex items-center gap-2 md:gap-2.5">
-              {/* Back button - mobile only */}
               <button
                 onClick={() => { setActiveChannel(null); setActiveDM(null) }}
                 className="md:hidden p-2 text-gray-500 hover:text-gray-300 hover:bg-surface-card rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
@@ -476,7 +466,7 @@ export default function ChatPage() {
               {activeChannel && (
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <Users size={13} />
-                  <span>{activeChannel.memberCount || channels.find(c => c._id === activeChannel._id)?.memberCount || '—'} üye</span>
+                  <span>{activeChannel.member_count || '—'} üye</span>
                 </div>
               )}
             </div>
@@ -503,34 +493,34 @@ export default function ChatPage() {
             <>
               {messages.map((msg, i) => {
                 const prevMsg = i > 0 ? messages[i - 1] : null
-                const isSameSender = prevMsg?.sender?._id === msg.sender?._id &&
-                  new Date(msg.createdAt) - new Date(prevMsg.createdAt) < 5 * 60 * 1000
-                const isOwn = msg.sender?._id === user?._id
+                const isSameSender = prevMsg?.sender_id === msg.sender_id &&
+                  new Date(msg.created_at) - new Date(prevMsg.created_at) < 5 * 60 * 1000
+                const isOwn = msg.sender_id === user?.id
 
                 return (
                   <div
-                    key={msg._id || i}
+                    key={msg.id || i}
                     className={`flex gap-3 group hover:bg-surface-card px-2 py-1 rounded-lg transition-all -mx-2 ${
                       isSameSender ? 'mt-0.5' : 'mt-3'
                     }`}
                   >
                     {!isSameSender ? (
-                      <div className={`w-8 h-8 rounded-full ${avatarColor(msg.sender?.name)} flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5`}>
-                        {getInitials(msg.sender?.name)}
+                      <div className={`w-8 h-8 rounded-full ${avatarColor(msg.sender_name)} flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5`}>
+                        {getInitials(msg.sender_name)}
                       </div>
                     ) : (
                       <div className="w-8 flex-shrink-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[10px] text-gray-600">{formatMsgTime(msg.createdAt).split(' ').pop()}</span>
+                        <span className="text-[10px] text-gray-600">{formatMsgTime(msg.created_at).split(' ').pop()}</span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       {!isSameSender && (
                         <div className="flex items-baseline gap-2 mb-0.5">
                           <span className={`text-sm font-semibold ${isOwn ? 'text-brand-300' : 'text-gray-200'}`}>
-                            {msg.sender?.name || 'Bilinmiyor'}
+                            {msg.sender_name || 'Bilinmiyor'}
                           </span>
-                          <span className="text-[11px] text-gray-600">{formatMsgTime(msg.createdAt)}</span>
-                          {msg.encrypted && (
+                          <span className="text-[11px] text-gray-600">{formatMsgTime(msg.created_at)}</span>
+                          {msg.encrypted === 1 && (
                             <span className="flex items-center gap-0.5 text-[10px] text-green-500">
                               <Lock size={10} />
                               Şifreli
@@ -538,15 +528,15 @@ export default function ChatPage() {
                           )}
                         </div>
                       )}
-                      {msg.fileUrl ? (
+                      {msg.file_url ? (
                         <a
-                          href={msg.fileUrl}
+                          href={msg.file_url}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-2 px-3 py-2 bg-surface-card border border-surface-border rounded-lg text-sm text-brand-300 hover:text-brand-200 hover:border-brand-500/40 transition-all"
                         >
                           <Paperclip size={13} />
-                          {msg.fileName || 'Dosya'}
+                          {msg.file_name || 'Dosya'}
                         </a>
                       ) : (
                         <p className="text-sm text-gray-300 leading-relaxed break-words">
@@ -558,7 +548,6 @@ export default function ChatPage() {
                 )
               })}
 
-              {/* Typing indicator */}
               {typingUsers.length > 0 && (
                 <div className="flex items-center gap-2 px-2 py-1">
                   <div className="flex gap-0.5">
@@ -630,15 +619,15 @@ export default function ChatPage() {
       {showNewDM && (
         <NewDMModal
           onClose={() => setShowNewDM(false)}
-          currentUserId={user?._id}
+          currentUserId={user?.id}
           onSelect={selectedUser => {
             const dm = {
-              userId: selectedUser._id,
+              userId: selectedUser.id,
               userName: selectedUser.name,
               department: selectedUser.department,
             }
             setDms(prev => {
-              if (prev.find(d => d.userId === selectedUser._id)) return prev
+              if (prev.find(d => d.userId === selectedUser.id)) return prev
               return [...prev, dm]
             })
             selectDM(dm)

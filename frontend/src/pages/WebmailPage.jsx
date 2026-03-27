@@ -500,11 +500,15 @@ export default function WebmailPage() {
             </div>
 
             {/* Attachments */}
-            {selectedEmail.attachments?.length > 0 && (
+            {(() => {
+              const atts = typeof selectedEmail.attachments === 'string'
+                ? (() => { try { return JSON.parse(selectedEmail.attachments) } catch { return [] } })()
+                : (selectedEmail.attachments || [])
+              return atts.length > 0 ? (
               <div className="mt-4">
-                <p className="text-xs text-gray-500 mb-2 font-medium">Ekler ({selectedEmail.attachments.length})</p>
+                <p className="text-xs text-gray-500 mb-2 font-medium">Ekler ({atts.length})</p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedEmail.attachments.map((att, i) => (
+                  {atts.map((att, i) => (
                     <a
                       key={i}
                       href={att.url || '#'}
@@ -516,7 +520,8 @@ export default function WebmailPage() {
                   ))}
                 </div>
               </div>
-            )}
+              ) : null
+            })()}
           </div>
         </div>
       ) : (
