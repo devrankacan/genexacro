@@ -34,13 +34,14 @@ function getInitials(name) {
     .slice(0, 2)
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
   const { user, logout, isAdmin } = useAuth()
   const { connected } = useSocket()
   const { logoUrl, companyName, accent } = useTheme()
   const navigate = useNavigate()
 
   const handleLogout = () => {
+    onNavigate?.()
     logout()
     navigate('/login', { replace: true })
   }
@@ -76,6 +77,7 @@ export default function Sidebar() {
           <NavLink
             key={path}
             to={path}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `nav-item ${isActive ? 'active' : ''}`
             }
@@ -96,6 +98,7 @@ export default function Sidebar() {
             </p>
             <NavLink
               to="/admin"
+              onClick={onNavigate}
               className={({ isActive }) =>
                 `nav-item ${isActive ? 'active' : ''}`
               }
@@ -105,6 +108,7 @@ export default function Sidebar() {
             </NavLink>
             <NavLink
               to="/settings"
+              onClick={onNavigate}
               className={({ isActive }) =>
                 `nav-item ${isActive ? 'active' : ''}`
               }

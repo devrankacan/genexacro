@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react'
-import { Palette, Upload, Building2, Check, RefreshCw, Image, Trash2 } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Palette, Upload, Building2, Check, RefreshCw, Image, Trash2, PenLine } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
+import MailEditor from '../components/MailEditor'
 
 const PRESET_COLORS = [
   { label: 'Mavi', value: '#3b82f6' },
@@ -28,6 +29,24 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef(null)
+  const [signature, setSignature] = useState('')
+  const [savingSignature, setSavingSignature] = useState(false)
+
+  useEffect(() => {
+    api.get('/api/auth/signature').then(({ data }) => setSignature(data.signature || '')).catch(() => {})
+  }, [])
+
+  const handleSaveSignature = async () => {
+    setSavingSignature(true)
+    try {
+      await api.put('/api/auth/signature', { signature })
+      toast.success('İmza kaydedildi.')
+    } catch {
+      toast.error('İmza kaydedilemedi.')
+    } finally {
+      setSavingSignature(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -51,11 +70,11 @@ export default function SettingsPage() {
     setUploading(true)
     try {
       const form = new FormData()
-      form.append('file', file)
+      form.append('files', file)
       const { data } = await api.post('/api/files/upload', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      const url = data.url || data.path || ''
+      const url = data.files?.[0]?.url || ''
       setLogo(url)
       toast.success('Logo yüklendi.')
     } catch {
@@ -69,7 +88,7 @@ export default function SettingsPage() {
   const removeLogo = () => setLogo('')
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 md:p-6">
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* Header */}
@@ -126,7 +145,7 @@ export default function SettingsPage() {
               type="text"
               value={company}
               onChange={e => setCompany(e.target.value)}
-              className="input-field max-w-sm"
+              className="input-field w-full"
               placeholder="Genexa CRO"
             />
           </div>
@@ -166,7 +185,7 @@ export default function SettingsPage() {
           {/* Custom color */}
           <div>
             <label className="block text-xs text-gray-400 mb-2">Özel Renk</label>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <input
                 type="color"
                 value={color}
@@ -184,7 +203,7 @@ export default function SettingsPage() {
                 placeholder="#3b82f6"
               />
               <div
-                className="flex-1 h-10 rounded-lg border border-surface-border flex items-center justify-center text-sm font-medium transition-all"
+                className="flex-1 min-w-[80px] h-10 rounded-lg border border-surface-border flex items-center justify-center text-sm font-medium transition-all"
                 style={{ backgroundColor: color, color: 'var(--accent-text)' }}
               >
                 Önizleme
@@ -214,6 +233,19 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Email Signature */}
+        <div className="card p-5 space-y-4">
+          <div className="flex items-center gap-2 mb-1">
+            <PenLine size={16} className="text-gray-400" />
+            <h2 className="text-sm font-semibold text-white">E-posta İmzası</h2>
+          </div>
+          <p className="text-xs text-gray-500">Gönderdiğiniz e-postalara otomatik eklenecek imzanız.</p>
+          <MailEditor value={signature} onChange={setSignature} placeholder="İmzanızı buraya yazın..." />
+          <button onClick={handleSaveSignature} disabled={savingSignature} className="btn-secondary text-sm">
+            {savingSignature ? <><RefreshCw size={13} className="animate-spin" /> Kaydediliyor...</> : <><Check size={13} /> İmzayı Kaydet</>}
+          </button>
         </div>
 
         {/* Save button */}

@@ -179,4 +179,19 @@ router.patch('/users/:id', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/auth/signature - get own signature
+router.get('/signature', authenticate, (req, res) => {
+  const db = getDb();
+  const row = db.prepare('SELECT signature FROM users WHERE id = ?').get(req.user.id);
+  res.json({ signature: row?.signature || '' });
+});
+
+// PUT /api/auth/signature - update own signature
+router.put('/signature', authenticate, (req, res) => {
+  const { signature } = req.body;
+  const db = getDb();
+  db.prepare('UPDATE users SET signature = ? WHERE id = ?').run(signature || '', req.user.id);
+  res.json({ success: true });
+});
+
 module.exports = router;

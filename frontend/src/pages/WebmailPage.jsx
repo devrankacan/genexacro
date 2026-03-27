@@ -23,6 +23,7 @@ import { format, parseISO, isToday, isYesterday } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
+import MailEditor from '../components/MailEditor'
 
 const FOLDERS = [
   { key: 'inbox', label: 'Gelen Kutusu', icon: Inbox, color: 'text-brand-400' },
@@ -46,6 +47,13 @@ function ComposeModal({ onClose, onSent }) {
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    api.get('/api/auth/signature').then(({ data }) => {
+      const sig = data.signature || ''
+      setBody(`<p><br></p><p>--</p>${sig}`)
+    }).catch(() => {})
+  }, [])
 
   const handleSend = async () => {
     if (!to.trim() || !subject.trim()) {
@@ -97,13 +105,7 @@ function ComposeModal({ onClose, onSent }) {
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1.5 font-medium">Mesaj</label>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Mesajınızı yazın..."
-              rows={12}
-              className="input-field resize-none leading-relaxed"
-            />
+            <MailEditor value={body} onChange={setBody} />
           </div>
         </div>
         <div className="flex items-center justify-between px-6 py-4 border-t border-surface-border bg-surface-sidebar/30">
@@ -151,11 +153,14 @@ export default function WebmailPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  // Mobile: 'folders' | 'list' | 'detail'
+  const [mobileView, setMobileView] = useState('folders')
   const PER_PAGE = 20
 
   const fetchEmails = useCallback(async () => {
     setLoading(true)
     setSelectedEmail(null)
+    setMobileView('list')
     try {
       const res = await api.get('/api/mail/emails', {
         params: { folder: activeFolder, page, limit: PER_PAGE, search: searchQuery || undefined },
@@ -188,6 +193,7 @@ export default function WebmailPage() {
 
   const handleOpenEmail = async (email) => {
     setSelectedEmail(email)
+    setMobileView('detail')
     if (!email.read) {
       try {
         await api.patch(`/api/mail/emails/${email._id}/read`)

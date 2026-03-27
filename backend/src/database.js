@@ -39,6 +39,8 @@ function initializeDatabase() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    -- Add signature column to users if not exists (migration)
+
     CREATE TABLE IF NOT EXISTS channels (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -147,6 +149,11 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_events_created_by ON events(created_by);
     CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
   `);
+
+  // Migration: add signature column if not exists
+  try {
+    database.exec(`ALTER TABLE users ADD COLUMN signature TEXT DEFAULT ''`);
+  } catch (e) { /* column already exists */ }
 
   console.log('[Database] Tables initialized successfully');
   return database;
