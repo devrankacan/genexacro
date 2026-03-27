@@ -306,7 +306,7 @@ export default function ChatPage() {
     const formData = new FormData()
     formData.append('files', file)
     try {
-      const res = await api.post('/api/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const res = await api.post('/api/files/upload', formData, { headers: { 'Content-Type': undefined } })
       const fileUrl = res.data.files?.[0]?.url || res.data.url
       const fileName = file.name
       const content = `[${fileName}](${fileUrl})`

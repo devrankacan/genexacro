@@ -72,7 +72,7 @@ export default function SettingsPage() {
       const form = new FormData()
       form.append('files', file)
       const { data } = await api.post('/api/files/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },
       })
       const url = data.files?.[0]?.url || ''
       setLogo(url)
