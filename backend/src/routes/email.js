@@ -165,9 +165,11 @@ router.post('/send', authenticate, async (req, res) => {
     }
 
     const transporter = createTransporter();
+    const db = getDb();
+    const smtpUser = getSetting(db, 'smtp_user') || process.env.SMTP_USER || req.user.email;
 
     const mailOptions = {
-      from: `"${req.user.name}" <${process.env.SMTP_USER || req.user.email}>`,
+      from: `"${req.user.name}" <${smtpUser}>`,
       to,
       subject,
       html: body,
@@ -196,7 +198,7 @@ router.post('/send', authenticate, async (req, res) => {
     `).run(
       emailId,
       messageId,
-      process.env.SMTP_USER || req.user.email,
+      smtpUser,
       to,
       subject,
       body,
