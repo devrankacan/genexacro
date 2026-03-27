@@ -105,9 +105,7 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
     try {
       const form = new FormData()
       form.append('files', file)
-      const { data } = await api.post('/api/files/upload', form, {
-        headers: { 'Content-Type': undefined },
-      })
+      const { data } = await api.post('/api/files/upload', form)
       const url = data.files?.[0]?.url
       if (url) editor.chain().focus().setImage({ src: url }).run()
     } catch {

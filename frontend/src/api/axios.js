@@ -1,22 +1,18 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: '',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+// Do NOT set default Content-Type here — axios sets it per request
+const api = axios.create({ baseURL: '' })
 
-// Request interceptor - add JWT token + fix FormData Content-Type
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    // Let browser set Content-Type with boundary for FormData
-    if (config.data instanceof FormData) {
-      delete config.headers['Content-Type']
+    // For FormData: let browser set multipart/form-data with boundary automatically
+    // For everything else: use application/json
+    if (!(config.data instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json'
     }
     return config
   },

@@ -71,9 +71,7 @@ export default function SettingsPage() {
     try {
       const form = new FormData()
       form.append('files', file)
-      const { data } = await api.post('/api/files/upload', form, {
-        headers: { 'Content-Type': undefined },
-      })
+      const { data } = await api.post('/api/files/upload', form)
       const url = data.files?.[0]?.url || ''
       setLogo(url)
       toast.success('Logo yüklendi.')
