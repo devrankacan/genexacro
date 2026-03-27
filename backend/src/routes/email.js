@@ -188,7 +188,6 @@ router.post('/send', authenticate, async (req, res) => {
     }
 
     // Save to DB regardless of SMTP result (store locally)
-    const db = getDb();
     const emailId = uuidv4();
     const messageId = sendResult ? sendResult.messageId : `local-${emailId}`;
 
