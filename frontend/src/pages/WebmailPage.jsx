@@ -62,7 +62,7 @@ function ComposeModal({ onClose, onSent }) {
     }
     setSending(true)
     try {
-      await api.post('/api/mail/send', { to: to.trim(), subject: subject.trim(), body })
+      await api.post('/api/email/send', { to: to.trim(), subject: subject.trim(), body })
       toast.success('E-posta başarıyla gönderildi.')
       onSent?.()
       onClose()
@@ -162,8 +162,9 @@ export default function WebmailPage() {
     setSelectedEmail(null)
     setMobileView('list')
     try {
-      const res = await api.get('/api/mail/emails', {
-        params: { folder: activeFolder, page, limit: PER_PAGE, search: searchQuery || undefined },
+      const endpoint = activeFolder === 'sent' ? '/api/email/sent' : '/api/email/inbox'
+      const res = await api.get(endpoint, {
+        params: { page, limit: PER_PAGE },
       })
       setEmails(res.data.emails || [])
       setTotal(res.data.total || 0)
@@ -181,7 +182,7 @@ export default function WebmailPage() {
   const handleSync = async () => {
     setSyncing(true)
     try {
-      await api.post('/api/mail/fetch')
+      await api.post('/api/email/fetch')
       toast.success('E-postalar senkronize edildi.')
       await fetchEmails()
     } catch (err) {
@@ -192,24 +193,29 @@ export default function WebmailPage() {
   }
 
   const handleOpenEmail = async (email) => {
-    setSelectedEmail(email)
-    setMobileView('detail')
     if (!email.read) {
       try {
-        await api.patch(`/api/mail/emails/${email._id}/read`)
+        // GET /:id endpoint automatically marks as read
+        const res = await api.get(`/api/email/${email.id}`)
+        setSelectedEmail(res.data.email)
         setEmails((prev) =>
-          prev.map((e) => (e._id === email._id ? { ...e, read: true } : e))
+          prev.map((e) => (e.id === email.id ? { ...e, read: 1 } : e))
         )
-      } catch {}
+      } catch {
+        setSelectedEmail(email)
+      }
+    } else {
+      setSelectedEmail(email)
     }
+    setMobileView('detail')
   }
 
   const handleDelete = async (emailId, e) => {
     e?.stopPropagation()
     try {
-      await api.delete(`/api/mail/emails/${emailId}`)
+      await api.delete(`/api/email/${emailId}`)
       toast.success('E-posta silindi.')
-      if (selectedEmail?._id === emailId) setSelectedEmail(null)
+      if (selectedEmail?.id === emailId) setSelectedEmail(null)
       await fetchEmails()
     } catch {
       toast.error('Silme işlemi başarısız.')
@@ -361,10 +367,10 @@ export default function WebmailPage() {
           ) : (
             filtered.map((email) => (
               <div
-                key={email._id}
+                key={email.id}
                 onClick={() => handleOpenEmail(email)}
                 className={`px-4 py-3 border-b border-surface-border cursor-pointer transition-all group ${
-                  selectedEmail?._id === email._id
+                  selectedEmail?.id === email.id
                     ? 'bg-brand-500/10 border-l-2 border-l-brand-500'
                     : 'hover:bg-surface-card'
                 } ${!email.read ? 'bg-surface-sidebar' : ''}`}
@@ -387,7 +393,7 @@ export default function WebmailPage() {
                       {formatEmailDate(email.date || email.createdAt)}
                     </span>
                     <button
-                      onClick={(e) => handleDelete(email._id, e)}
+                      onClick={(e) => handleDelete(email.id, e)}
                       className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-600 hover:text-red-400 transition-all"
                     >
                       <Trash2 size={12} />
@@ -446,7 +452,7 @@ export default function WebmailPage() {
               </button>
               <button
                 onClick={() => {
-                  handleDelete(selectedEmail._id)
+                  handleDelete(selectedEmail.id)
                 }}
                 className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
