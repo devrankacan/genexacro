@@ -121,6 +121,32 @@ router.get('/sent', authenticate, (req, res) => {
 });
 
 /**
+ * GET /api/email/trash
+ * List trashed emails for authenticated user
+ */
+router.get('/trash', authenticate, (req, res) => {
+  try {
+    const db = getDb();
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const emails = db.prepare(`
+      SELECT id, message_id, from_addr, to_addr, subject, direction, read, folder, created_at, attachments
+      FROM emails
+      WHERE user_id = ? AND folder = 'trash'
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `).all(req.user.id, parseInt(limit), offset);
+
+    const total = db.prepare(`SELECT COUNT(*) as count FROM emails WHERE user_id = ? AND folder = 'trash'`).get(req.user.id);
+
+    res.json({ emails, total: total.count, page: parseInt(page), pages: Math.ceil(total.count / parseInt(limit)) });
+  } catch (err) {
+    res.status(500).json({ error: 'Çöp kutusu alınırken bir hata oluştu.' });
+  }
+});
+
+/**
  * GET /api/email/:id
  * Get a single email by ID and mark as read
  */
@@ -235,32 +261,6 @@ router.post('/send', authenticate, async (req, res) => {
   } catch (err) {
     console.error('[Email] Send error:', err);
     res.status(500).json({ error: 'E-posta gönderilirken bir hata oluştu.' });
-  }
-});
-
-/**
- * GET /api/email/trash
- * List trashed emails for authenticated user
- */
-router.get('/trash', authenticate, (req, res) => {
-  try {
-    const db = getDb();
-    const { page = 1, limit = 20 } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-
-    const emails = db.prepare(`
-      SELECT id, message_id, from_addr, to_addr, subject, direction, read, folder, created_at, attachments
-      FROM emails
-      WHERE user_id = ? AND folder = 'trash'
-      ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
-    `).all(req.user.id, parseInt(limit), offset);
-
-    const total = db.prepare(`SELECT COUNT(*) as count FROM emails WHERE user_id = ? AND folder = 'trash'`).get(req.user.id);
-
-    res.json({ emails, total: total.count, page: parseInt(page), pages: Math.ceil(total.count / parseInt(limit)) });
-  } catch (err) {
-    res.status(500).json({ error: 'Çöp kutusu alınırken bir hata oluştu.' });
   }
 });
 

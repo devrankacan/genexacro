@@ -130,7 +130,7 @@ function ComposeModal({ onClose, onSent, prefillTo = '', prefillSubject = '', pr
               try {
                 const formData = new FormData()
                 files.forEach(f => formData.append('files', f))
-                const res = await api.post('/api/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+                const res = await api.post('/api/files/upload', formData)
                 const uploaded = (res.data.files || []).map(f => ({ url: f.url, originalname: f.originalname }))
                 setAttachments(prev => [...prev, ...uploaded])
               } catch { toast.error('Dosya yüklenemedi.') }
