@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import Sidebar from './Sidebar'
-import { Bell, Search, Menu, X } from 'lucide-react'
+import { Bell, Search, Menu, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useSocket } from '../../context/SocketContext'
+import { useTheme } from '../../context/ThemeContext'
 import { useLocation } from 'react-router-dom'
 
 const PAGE_TITLES = {
@@ -18,6 +19,7 @@ const PAGE_TITLES = {
 export default function Layout({ children }) {
   const { user } = useAuth()
   const { connected } = useSocket()
+  const { mode, toggleMode } = useTheme()
   const location = useLocation()
   const [notifOpen, setNotifOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -64,6 +66,15 @@ export default function Layout({ children }) {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Dark / Light toggle */}
+            <button
+              onClick={toggleMode}
+              title={mode === 'dark' ? 'Gündüz moduna geç' : 'Gece moduna geç'}
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-card border border-surface-border text-gray-400 hover:text-gray-200 transition-all"
+            >
+              {mode === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+
             <div className="relative hidden lg:flex items-center">
               <Search size={14} className="absolute left-3 text-gray-500" />
               <input

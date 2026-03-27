@@ -2,7 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Dynamic theme variables (overridden by ThemeContext) ── */
+/* ── Surface color variables (dark mode default) ── */
+:root {
+  --bg-primary:  #0f1117;
+  --bg-sidebar:  #1a1d27;
+  --bg-card:     #242736;
+  --bg-elevated: #2d3144;
+  --border-color:#2e3347;
+  --text-base:   #e2e8f0;
+  --text-muted:  #94a3b8;
+  --text-subtle: #6b7280;
+  --scrollbar-track: #1a1d27;
+  --scrollbar-thumb: #2e3347;
+}
+
+/* ── Light mode ── */
+.light {
+  --bg-primary:  #f1f5f9;
+  --bg-sidebar:  #ffffff;
+  --bg-card:     #ffffff;
+  --bg-elevated: #f8fafc;
+  --border-color:#e2e8f0;
+  --text-base:   #1e293b;
+  --text-muted:  #475569;
+  --text-subtle: #94a3b8;
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+}
+
+/* ── Text color overrides for light mode ── */
+.light .text-white        { color: #1e293b !important; }
+.light .text-gray-100     { color: #1e293b !important; }
+.light .text-gray-200     { color: #334155 !important; }
+.light .text-gray-300     { color: #475569 !important; }
+.light .text-gray-400     { color: #64748b !important; }
+.light .text-gray-500     { color: #94a3b8 !important; }
+.light .text-gray-600     { color: #94a3b8 !important; }
+.light body               { background-color: var(--bg-primary); color: var(--text-base); }
+.light .bg-\[#0f1117\]   { background-color: var(--bg-primary) !important; }
+.light .placeholder-gray-500::placeholder { color: #94a3b8; }
+.light .placeholder-gray-600::placeholder { color: #cbd5e1; }
+
+/* ── Dynamic accent variables (overridden by ThemeContext) ── */
 :root {
   --accent: #dc2626;
   --accent-r: 220;
@@ -80,11 +121,11 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #1a1d27;
+    background: var(--scrollbar-track);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #2e3347;
+    background: var(--scrollbar-thumb);
     border-radius: 3px;
   }
 

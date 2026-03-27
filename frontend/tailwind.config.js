@@ -34,11 +34,11 @@ export default {
           900: '#1e3a8a',
         },
         surface: {
-          DEFAULT: '#0f1117',
-          sidebar: '#1a1d27',
-          card: '#242736',
-          elevated: '#2d3144',
-          border: '#2e3347',
+          DEFAULT: 'var(--bg-primary)',
+          sidebar: 'var(--bg-sidebar)',
+          card: 'var(--bg-card)',
+          elevated: 'var(--bg-elevated)',
+          border: 'var(--border-color)',
         }
       },
       fontFamily: {

@@ -3,10 +3,6 @@ import api from '../api/axios'
 
 const ThemeContext = createContext(null)
 
-/**
- * Calculate relative luminance (WCAG 2.1) from hex color.
- * Returns true if the color is dark (white text needed).
- */
 function isDarkColor(hex) {
   const r = parseInt(hex.slice(1, 3), 16) / 255
   const g = parseInt(hex.slice(3, 5), 16) / 255
@@ -24,11 +20,10 @@ function hexToRgb(hex) {
   }
 }
 
-function applyTheme(accent, logoUrl, companyName) {
+function applyAccent(accent) {
   if (!accent || !/^#[0-9a-fA-F]{6}$/.test(accent)) accent = '#dc2626'
   const { r, g, b } = hexToRgb(accent)
   const textOnAccent = isDarkColor(accent) ? '#ffffff' : '#111827'
-
   const root = document.documentElement
   root.style.setProperty('--accent', accent)
   root.style.setProperty('--accent-r', r)
@@ -38,21 +33,28 @@ function applyTheme(accent, logoUrl, companyName) {
   root.style.setProperty('--accent-20', `rgba(${r},${g},${b},0.20)`)
   root.style.setProperty('--accent-30', `rgba(${r},${g},${b},0.30)`)
   root.style.setProperty('--accent-text', textOnAccent)
-
-  // Persist locally for fast reload
   localStorage.setItem('theme_accent', accent)
-  if (logoUrl !== undefined) localStorage.setItem('theme_logo', logoUrl || '')
-  if (companyName !== undefined) localStorage.setItem('theme_company', companyName || 'Genexa CRO')
+}
+
+function applyMode(mode) {
+  if (mode === 'light') {
+    document.documentElement.classList.add('light')
+  } else {
+    document.documentElement.classList.remove('light')
+  }
+  localStorage.setItem('theme_mode', mode)
 }
 
 export function ThemeProvider({ children }) {
   const [accent, setAccent] = useState(() => localStorage.getItem('theme_accent') || '#dc2626')
   const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('theme_logo') || '')
   const [companyName, setCompanyName] = useState(() => localStorage.getItem('theme_company') || 'Genexa CRO')
+  const [mode, setMode] = useState(() => localStorage.getItem('theme_mode') || 'dark')
 
-  // Apply on mount from localStorage immediately (no flash)
+  // Apply immediately on mount (no flash)
   useEffect(() => {
-    applyTheme(accent, logoUrl, companyName)
+    applyAccent(accent)
+    applyMode(mode)
   }, []) // eslint-disable-line
 
   // Fetch fresh settings from server
@@ -65,7 +67,9 @@ export function ThemeProvider({ children }) {
       setAccent(newAccent)
       setLogoUrl(newLogo)
       setCompanyName(newCompany)
-      applyTheme(newAccent, newLogo, newCompany)
+      applyAccent(newAccent)
+      localStorage.setItem('theme_logo', newLogo)
+      localStorage.setItem('theme_company', newCompany)
     } catch {
       // use cached values
     }
@@ -84,11 +88,19 @@ export function ThemeProvider({ children }) {
     setAccent(newAccent)
     setLogoUrl(newLogo)
     setCompanyName(newCompanyName)
-    applyTheme(newAccent, newLogo, newCompanyName)
+    applyAccent(newAccent)
+    localStorage.setItem('theme_logo', newLogo || '')
+    localStorage.setItem('theme_company', newCompanyName || 'Genexa CRO')
   }, [])
 
+  const toggleMode = useCallback(() => {
+    const next = mode === 'dark' ? 'light' : 'dark'
+    setMode(next)
+    applyMode(next)
+  }, [mode])
+
   return (
-    <ThemeContext.Provider value={{ accent, logoUrl, companyName, updateTheme, fetchSettings }}>
+    <ThemeContext.Provider value={{ accent, logoUrl, companyName, mode, updateTheme, fetchSettings, toggleMode }}>
       {children}
     </ThemeContext.Provider>
   )
