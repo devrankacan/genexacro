@@ -89,7 +89,7 @@ function EditorToolbar({ editor }) {
   ]
 
   return (
-    <div className="flex items-center gap-0.5 flex-wrap border-b border-surface-border px-3 py-2 bg-surface-sidebar/50">
+    <div className="flex items-center gap-0.5 flex-wrap border-b border-surface-border px-3 py-2 bg-surface-elevated">
       {groups.map((group, gi) => (
         <React.Fragment key={gi}>
           {gi > 0 && <div className="w-px h-5 bg-surface-border mx-1" />}
@@ -312,7 +312,7 @@ export default function NotesPage() {
               <div
                 key={note._id}
                 onClick={() => selectNote(note)}
-                className={`px-3 py-3 border-b border-surface-border/50 cursor-pointer group transition-all ${
+                className={`px-3 py-3 border-b border-surface-border cursor-pointer group transition-all ${
                   activeNote?._id === note._id
                     ? 'bg-brand-500/10 border-l-2 border-l-brand-500'
                     : 'hover:bg-surface-card'

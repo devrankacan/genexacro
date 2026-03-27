@@ -57,7 +57,7 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md animate-fade-in">
         {/* Card */}
-        <div className="bg-surface-card/80 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+        <div className="bg-surface-card backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
           {/* Top accent line */}
           <div className="h-0.5 bg-gradient-to-r from-transparent via-brand-500 to-transparent" />
 
@@ -151,7 +151,7 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="px-8 py-4 bg-surface-sidebar/50 border-t border-surface-border">
+          <div className="px-8 py-4 bg-surface-elevated border-t border-surface-border">
             <p className="text-center text-xs text-gray-600">
               Hesabınız yoksa sistem yöneticinize başvurun.
             </p>

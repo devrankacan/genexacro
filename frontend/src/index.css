@@ -196,7 +196,7 @@
   }
 
   .table-cell {
-    @apply px-4 py-3 text-sm text-gray-300 border-b border-surface-border/50;
+    @apply px-4 py-3 text-sm text-gray-300 border-b border-surface-border;
   }
 }
 

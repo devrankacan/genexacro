@@ -108,7 +108,7 @@ function ComposeModal({ onClose, onSent }) {
             <MailEditor value={body} onChange={setBody} />
           </div>
         </div>
-        <div className="flex items-center justify-between px-6 py-4 border-t border-surface-border bg-surface-sidebar/30">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-surface-border bg-surface-sidebar">
           <div className="flex items-center gap-2">
             <button className="btn-secondary text-xs py-1.5 px-3">
               <Paperclip size={14} />
@@ -363,11 +363,11 @@ export default function WebmailPage() {
               <div
                 key={email._id}
                 onClick={() => handleOpenEmail(email)}
-                className={`px-4 py-3 border-b border-surface-border/50 cursor-pointer transition-all group ${
+                className={`px-4 py-3 border-b border-surface-border cursor-pointer transition-all group ${
                   selectedEmail?._id === email._id
                     ? 'bg-brand-500/10 border-l-2 border-l-brand-500'
                     : 'hover:bg-surface-card'
-                } ${!email.read ? 'bg-surface-sidebar/30' : ''}`}
+                } ${!email.read ? 'bg-surface-sidebar' : ''}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">

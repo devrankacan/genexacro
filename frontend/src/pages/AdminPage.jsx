@@ -211,7 +211,7 @@ function StatsTab() {
               { label: 'WebSocket', status: 'Aktif', ok: true },
               { label: 'IMAP/SMTP', status: stats?.mailConnected ? 'Bağlı' : 'Bağlı değil', ok: stats?.mailConnected },
             ].map(({ label, status, ok }) => (
-              <div key={label} className="flex items-center justify-between py-2 border-b border-surface-border/50 last:border-0">
+              <div key={label} className="flex items-center justify-between py-2 border-b border-surface-border last:border-0">
                 <span className="text-sm text-gray-400">{label}</span>
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${ok ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -229,7 +229,7 @@ function StatsTab() {
               <p className="text-sm text-gray-500 text-center py-4">Aktivite bulunamadı</p>
             ) : (
               (stats?.recentActivity || []).slice(0, 6).map((act, i) => (
-                <div key={i} className="flex items-center gap-3 py-2 border-b border-surface-border/50 last:border-0">
+                <div key={i} className="flex items-center gap-3 py-2 border-b border-surface-border last:border-0">
                   <div className="w-7 h-7 rounded-full bg-surface-elevated flex items-center justify-center flex-shrink-0">
                     <Activity size={13} className="text-brand-400" />
                   </div>
@@ -328,7 +328,7 @@ function UsersTab() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-sidebar/50">
+              <tr className="bg-surface-elevated">
                 <th className="table-header">Ad Soyad</th>
                 <th className="table-header">E-posta</th>
                 <th className="table-header">Departman</th>
@@ -352,7 +352,7 @@ function UsersTab() {
                 </tr>
               ) : (
                 users.map(u => (
-                  <tr key={u._id} className="hover:bg-surface-card/30 transition-colors">
+                  <tr key={u._id} className="hover:bg-surface-card transition-colors">
                     <td className="table-cell">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-xs font-semibold text-brand-300 flex-shrink-0">
@@ -495,7 +495,7 @@ function LogsTab() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-sidebar/50">
+              <tr className="bg-surface-elevated">
                 <th className="table-header">Tarih/Saat</th>
                 <th className="table-header">Kullanıcı</th>
                 <th className="table-header">İşlem</th>
@@ -518,7 +518,7 @@ function LogsTab() {
                 </tr>
               ) : (
                 logs.map((log, i) => (
-                  <tr key={log._id || i} className="hover:bg-surface-card/30 transition-colors">
+                  <tr key={log._id || i} className="hover:bg-surface-card transition-colors">
                     <td className="table-cell">
                       <div className="flex items-center gap-1.5 text-gray-500 text-xs">
                         <Clock size={11} />
@@ -628,7 +628,7 @@ function EmailTrafficTab() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-surface-sidebar/50">
+              <tr className="bg-surface-elevated">
                 <th className="table-header">Yön</th>
                 <th className="table-header">Gönderen</th>
                 <th className="table-header">Alıcı</th>
@@ -651,7 +651,7 @@ function EmailTrafficTab() {
                 </tr>
               ) : (
                 emails.map((email, i) => (
-                  <tr key={email._id || i} className="hover:bg-surface-card/30 transition-colors">
+                  <tr key={email._id || i} className="hover:bg-surface-card transition-colors">
                     <td className="table-cell">
                       {email.direction === 'IN' || email.folder === 'inbox' ? (
                         <div className="flex items-center gap-1 text-green-400">
@@ -821,7 +821,7 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Tab navigation - scrollable on mobile */}
-      <div className="flex-shrink-0 border-b border-surface-border bg-surface-sidebar/30">
+      <div className="flex-shrink-0 border-b border-surface-border bg-surface-sidebar">
         <div className="flex items-center px-3 md:px-6 gap-1 pt-3 overflow-x-auto scrollbar-hide">
           {TABS.map(({ key, label, icon: Icon }) => (
             <button

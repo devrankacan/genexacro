@@ -335,7 +335,7 @@ export default function CalendarPage() {
 
       <div className="flex-1 overflow-hidden card p-2 md:p-4 relative">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-surface-card/50 rounded-xl z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface-card rounded-xl z-10">
             <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}

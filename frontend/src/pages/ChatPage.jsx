@@ -510,7 +510,7 @@ export default function ChatPage() {
                 return (
                   <div
                     key={msg._id || i}
-                    className={`flex gap-3 group hover:bg-surface-card/30 px-2 py-1 rounded-lg transition-all -mx-2 ${
+                    className={`flex gap-3 group hover:bg-surface-card px-2 py-1 rounded-lg transition-all -mx-2 ${
                       isSameSender ? 'mt-0.5' : 'mt-3'
                     }`}
                   >
