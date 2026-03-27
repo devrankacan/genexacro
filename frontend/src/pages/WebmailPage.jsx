@@ -42,17 +42,23 @@ function formatEmailDate(dateStr) {
   }
 }
 
-function ComposeModal({ onClose, onSent }) {
-  const [to, setTo] = useState('')
-  const [subject, setSubject] = useState('')
+function ComposeModal({ onClose, onSent, prefillTo = '', prefillSubject = '', prefillBody = '', title = 'Yeni E-posta' }) {
+  const [to, setTo] = useState(prefillTo)
+  const [subject, setSubject] = useState(prefillSubject)
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
     api.get('/api/auth/signature').then(({ data }) => {
       const sig = data.signature || ''
-      setBody(`<p><br></p><p>--</p>${sig}`)
-    }).catch(() => {})
+      if (prefillBody) {
+        setBody(`${prefillBody}<p><br></p><p>--</p>${sig}`)
+      } else {
+        setBody(`<p><br></p><p>--</p>${sig}`)
+      }
+    }).catch(() => {
+      if (prefillBody) setBody(prefillBody)
+    })
   }, [])
 
   const handleSend = async () => {
@@ -62,8 +68,12 @@ function ComposeModal({ onClose, onSent }) {
     }
     setSending(true)
     try {
-      await api.post('/api/email/send', { to: to.trim(), subject: subject.trim(), body })
-      toast.success('E-posta başarıyla gönderildi.')
+      const res = await api.post('/api/email/send', { to: to.trim(), subject: subject.trim(), body })
+      if (res.status === 207) {
+        toast('E-posta kaydedildi ancak SMTP ile gönderilemedi. Mail ayarlarını kontrol edin.', { icon: '⚠️' })
+      } else {
+        toast.success('E-posta başarıyla gönderildi.')
+      }
       onSent?.()
       onClose()
     } catch (err) {
@@ -77,7 +87,7 @@ function ComposeModal({ onClose, onSent }) {
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-content max-w-2xl w-full animate-fade-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-surface-border">
-          <h3 className="text-base font-semibold text-white">Yeni E-posta</h3>
+          <h3 className="text-base font-semibold text-white">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X size={20} />
           </button>
@@ -150,6 +160,7 @@ export default function WebmailPage() {
   const [syncing, setSyncing] = useState(false)
   const [selectedEmail, setSelectedEmail] = useState(null)
   const [showCompose, setShowCompose] = useState(false)
+  const [composeProps, setComposeProps] = useState({})
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -193,21 +204,39 @@ export default function WebmailPage() {
   }
 
   const handleOpenEmail = async (email) => {
-    if (!email.read) {
-      try {
-        // GET /:id endpoint automatically marks as read
-        const res = await api.get(`/api/email/${email.id}`)
-        setSelectedEmail(res.data.email)
-        setEmails((prev) =>
-          prev.map((e) => (e.id === email.id ? { ...e, read: 1 } : e))
-        )
-      } catch {
-        setSelectedEmail(email)
-      }
-    } else {
+    try {
+      // Always fetch full email (body field only comes from GET /:id)
+      const res = await api.get(`/api/email/${email.id}`)
+      setSelectedEmail(res.data.email)
+      setEmails((prev) =>
+        prev.map((e) => (e.id === email.id ? { ...e, read: 1 } : e))
+      )
+    } catch {
       setSelectedEmail(email)
     }
     setMobileView('detail')
+  }
+
+  const handleReply = () => {
+    if (!selectedEmail) return
+    setComposeProps({
+      title: 'Yanıtla',
+      prefillTo: selectedEmail.from_addr,
+      prefillSubject: selectedEmail.subject?.startsWith('Re:') ? selectedEmail.subject : `Re: ${selectedEmail.subject || ''}`,
+      prefillBody: `<blockquote style="border-left:3px solid #666;padding-left:12px;color:#999;margin:8px 0">${selectedEmail.body || ''}</blockquote>`,
+    })
+    setShowCompose(true)
+  }
+
+  const handleForward = () => {
+    if (!selectedEmail) return
+    setComposeProps({
+      title: 'İlet',
+      prefillTo: '',
+      prefillSubject: selectedEmail.subject?.startsWith('Fwd:') ? selectedEmail.subject : `Fwd: ${selectedEmail.subject || ''}`,
+      prefillBody: `<p>---------- Yönlendirilen E-posta ----------</p><p><b>Gönderen:</b> ${selectedEmail.from_addr}<br><b>Konu:</b> ${selectedEmail.subject}</p><br>${selectedEmail.body || ''}`,
+    })
+    setShowCompose(true)
   }
 
   const handleDelete = async (emailId, e) => {
@@ -442,11 +471,11 @@ export default function WebmailPage() {
               </h3>
             </div>
             <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <button className="btn-secondary text-xs py-1.5 px-2 md:px-3">
+              <button onClick={handleReply} className="btn-secondary text-xs py-1.5 px-2 md:px-3">
                 <Reply size={13} />
                 <span className="hidden sm:inline">Yanıtla</span>
               </button>
-              <button className="btn-secondary text-xs py-1.5 px-2 md:px-3">
+              <button onClick={handleForward} className="btn-secondary text-xs py-1.5 px-2 md:px-3">
                 <Forward size={13} />
                 <span className="hidden sm:inline">İlet</span>
               </button>
@@ -532,7 +561,7 @@ export default function WebmailPage() {
       )}
 
       {showCompose && (
-        <ComposeModal onClose={() => setShowCompose(false)} onSent={fetchEmails} />
+        <ComposeModal onClose={() => { setShowCompose(false); setComposeProps({}) }} onSent={fetchEmails} {...composeProps} />
       )}
     </div>
   )
