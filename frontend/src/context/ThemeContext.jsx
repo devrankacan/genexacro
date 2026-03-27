@@ -45,6 +45,16 @@ function applyMode(mode) {
   localStorage.setItem('theme_mode', mode)
 }
 
+function applyFavicon(logoUrl) {
+  const favicon = document.querySelector("link[rel~='icon']") || (() => {
+    const el = document.createElement('link')
+    el.rel = 'icon'
+    document.head.appendChild(el)
+    return el
+  })()
+  favicon.href = logoUrl || '/vite.svg'
+}
+
 export function ThemeProvider({ children }) {
   const [accent, setAccent] = useState(() => localStorage.getItem('theme_accent') || '#dc2626')
   const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('theme_logo') || '')
@@ -55,7 +65,17 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     applyAccent(accent)
     applyMode(mode)
+    applyFavicon(logoUrl)
   }, []) // eslint-disable-line
+
+  // Update favicon and title whenever logo/company changes
+  useEffect(() => {
+    applyFavicon(logoUrl)
+  }, [logoUrl])
+
+  useEffect(() => {
+    document.title = `${companyName} | İletişim`
+  }, [companyName])
 
   // Fetch fresh settings from server
   const fetchSettings = useCallback(async () => {
