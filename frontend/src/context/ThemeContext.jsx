@@ -25,7 +25,7 @@ function hexToRgb(hex) {
 }
 
 function applyTheme(accent, logoUrl, companyName) {
-  if (!accent || !/^#[0-9a-fA-F]{6}$/.test(accent)) accent = '#3b82f6'
+  if (!accent || !/^#[0-9a-fA-F]{6}$/.test(accent)) accent = '#dc2626'
   const { r, g, b } = hexToRgb(accent)
   const textOnAccent = isDarkColor(accent) ? '#ffffff' : '#111827'
 
@@ -46,7 +46,7 @@ function applyTheme(accent, logoUrl, companyName) {
 }
 
 export function ThemeProvider({ children }) {
-  const [accent, setAccent] = useState(() => localStorage.getItem('theme_accent') || '#3b82f6')
+  const [accent, setAccent] = useState(() => localStorage.getItem('theme_accent') || '#dc2626')
   const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('theme_logo') || '')
   const [companyName, setCompanyName] = useState(() => localStorage.getItem('theme_company') || 'Genexa CRO')
 
@@ -59,7 +59,7 @@ export function ThemeProvider({ children }) {
   const fetchSettings = useCallback(async () => {
     try {
       const { data } = await api.get('/api/settings')
-      const newAccent = data.accent_color || '#3b82f6'
+      const newAccent = data.accent_color || '#dc2626'
       const newLogo = data.logo_url || ''
       const newCompany = data.company_name || 'Genexa CRO'
       setAccent(newAccent)

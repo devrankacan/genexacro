@@ -4,13 +4,13 @@
 
 /* ── Dynamic theme variables (overridden by ThemeContext) ── */
 :root {
-  --accent: #3b82f6;
-  --accent-r: 59;
-  --accent-g: 130;
-  --accent-b: 246;
-  --accent-10: rgba(59,130,246,0.10);
-  --accent-20: rgba(59,130,246,0.20);
-  --accent-30: rgba(59,130,246,0.30);
+  --accent: #dc2626;
+  --accent-r: 220;
+  --accent-g: 38;
+  --accent-b: 38;
+  --accent-10: rgba(220,38,38,0.10);
+  --accent-20: rgba(220,38,38,0.20);
+  --accent-30: rgba(220,38,38,0.30);
   --accent-text: #ffffff;
 }
 

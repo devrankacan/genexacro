@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -7,13 +7,14 @@ import Highlight from '@tiptap/extension-highlight'
 import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Link from '@tiptap/extension-link'
-import { Extension } from '@tiptap/core'
+import Image from '@tiptap/extension-image'
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Link as LinkIcon,
-  Baseline, Palette,
+  Baseline, ImageIcon,
 } from 'lucide-react'
+import api from '../api/axios'
 
 // Custom FontSize extension
 const FontSize = TextStyle.extend({
@@ -32,8 +33,6 @@ const FontSize = TextStyle.extend({
       ...this.parent?.(),
       setFontSize: size => ({ chain }) =>
         chain().setMark('textStyle', { fontSize: size }).run(),
-      unsetFontSize: () => ({ chain }) =>
-        chain().setMark('textStyle', { fontSize: null }).removeEmptyTextStyle().run(),
     }
   },
 })
@@ -53,10 +52,7 @@ function ToolbarButton({ onClick, active, title, children }) {
       onMouseDown={e => { e.preventDefault(); onClick() }}
       title={title}
       className={`w-7 h-7 flex items-center justify-center rounded text-xs transition-colors
-        ${active
-          ? 'text-white'
-          : 'text-gray-400 hover:text-gray-200 hover:bg-surface-elevated'
-        }`}
+        ${active ? 'text-white' : 'text-gray-400 hover:text-gray-200 hover:bg-surface-elevated'}`}
       style={active ? { backgroundColor: 'var(--accent)' } : {}}
     >
       {children}
@@ -65,6 +61,8 @@ function ToolbarButton({ onClick, active, title, children }) {
 }
 
 export default function MailEditor({ value, onChange, placeholder = 'Mesajınızı yazın...' }) {
+  const imgInputRef = useRef(null)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ code: false, codeBlock: false }),
@@ -74,11 +72,10 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
       FontSize,
       Color,
       Link.configure({ openOnClick: false }),
+      Image.configure({ inline: true, allowBase64: true }),
     ],
     content: value || '',
-    onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML())
-    },
+    onUpdate: ({ editor }) => onChange?.(editor.getHTML()),
     editorProps: {
       attributes: {
         class: 'outline-none min-h-[200px] text-gray-200',
@@ -87,7 +84,6 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
     },
   })
 
-  // Sync external value (e.g. when signature is inserted)
   useEffect(() => {
     if (editor && value !== undefined && editor.getHTML() !== value) {
       editor.commands.setContent(value || '', false)
@@ -101,6 +97,24 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
     if (url === null) return
     if (url === '') { editor.chain().focus().extendMarkRange('link').unsetLink().run(); return }
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+  }, [editor])
+
+  const handleImageUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !editor) return
+    try {
+      const form = new FormData()
+      form.append('files', file)
+      const { data } = await api.post('/api/files/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      const url = data.files?.[0]?.url
+      if (url) editor.chain().focus().setImage({ src: url }).run()
+    } catch {
+      // silently fail — user can try again
+    } finally {
+      e.target.value = ''
+    }
   }, [editor])
 
   if (!editor) return null
@@ -142,7 +156,7 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
         <div className="relative group">
           <button
             type="button"
-            className="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-200 hover:bg-surface-elevated transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-200 hover:bg-surface-elevated transition-colors relative"
             title="Yazı rengi"
           >
             <Baseline size={13} />
@@ -195,6 +209,18 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
         <ToolbarButton onClick={setLink} active={editor.isActive('link')} title="Bağlantı ekle">
           <LinkIcon size={13} />
         </ToolbarButton>
+
+        {/* Image upload */}
+        <ToolbarButton onClick={() => imgInputRef.current?.click()} active={false} title="Resim ekle">
+          <ImageIcon size={13} />
+        </ToolbarButton>
+        <input
+          ref={imgInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
       </div>
 
       {/* Editor area */}

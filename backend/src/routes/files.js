@@ -96,7 +96,7 @@ router.post('/upload', authenticate, (req, res) => {
       originalname: file.originalname,
       mimetype: file.mimetype,
       size: file.size,
-      url: `/api/files/${file.filename}`
+      url: `/uploads/${file.filename}`
     }));
 
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
