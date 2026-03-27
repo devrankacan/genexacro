@@ -235,7 +235,7 @@ export default function WebmailPage() {
     const q = searchQuery.toLowerCase()
     return (
       e.subject?.toLowerCase().includes(q) ||
-      e.from?.toLowerCase().includes(q) ||
+      e.from_addr?.toLowerCase().includes(q) ||
       e.to?.toLowerCase().includes(q)
     )
   })
@@ -385,12 +385,12 @@ export default function WebmailPage() {
                         !email.read ? 'text-white font-semibold' : 'text-gray-300'
                       }`}
                     >
-                      {activeFolder === 'sent' ? email.to : (email.fromName || email.from)}
+                      {activeFolder === 'sent' ? email.to_addr : email.from_addr}
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <span className="text-[10px] text-gray-600">
-                      {formatEmailDate(email.date || email.createdAt)}
+                      {formatEmailDate(email.created_at)}
                     </span>
                     <button
                       onClick={(e) => handleDelete(email.id, e)}
@@ -408,7 +408,7 @@ export default function WebmailPage() {
                   {email.subject || '(Konu yok)'}
                 </p>
                 <p className="text-[11px] text-gray-600 truncate mt-0.5">
-                  {email.textBody?.slice(0, 80) || email.bodyText?.slice(0, 80) || ''}
+                  {email.body ? email.body.replace(/<[^>]*>/g, '').slice(0, 80) : ''}
                 </p>
               </div>
             ))
@@ -466,17 +466,17 @@ export default function WebmailPage() {
             <div className="bg-surface-card rounded-xl border border-surface-border p-4 md:p-5 mb-5">
               <div className="grid grid-cols-[70px_1fr] md:grid-cols-[80px_1fr] gap-y-2 text-sm">
                 <span className="text-gray-500 font-medium">Gönderen:</span>
-                <span className="text-gray-200 break-all">{selectedEmail.fromName || selectedEmail.from}</span>
+                <span className="text-gray-200 break-all">{selectedEmail.from_addr}</span>
                 <span className="text-gray-500 font-medium">Alıcı:</span>
-                <span className="text-gray-200 break-all">{selectedEmail.to}</span>
+                <span className="text-gray-200 break-all">{selectedEmail.to_addr}</span>
                 <span className="text-gray-500 font-medium">Tarih:</span>
                 <span className="text-gray-400 flex items-center gap-1.5">
                   <Clock size={12} />
-                  {selectedEmail.date
+                  {selectedEmail.created_at
                     ? format(
-                        typeof selectedEmail.date === 'string'
-                          ? parseISO(selectedEmail.date)
-                          : new Date(selectedEmail.date),
+                        typeof selectedEmail.created_at === 'string'
+                          ? parseISO(selectedEmail.created_at)
+                          : new Date(selectedEmail.created_at),
                         "d MMMM yyyy, HH:mm",
                         { locale: tr }
                       )
@@ -487,15 +487,13 @@ export default function WebmailPage() {
 
             {/* Email body */}
             <div className="bg-surface-card rounded-xl border border-surface-border p-4 md:p-5">
-              {selectedEmail.htmlBody ? (
+              {selectedEmail.body ? (
                 <div
                   className="prose prose-invert prose-sm max-w-none text-gray-300 leading-relaxed overflow-x-auto"
-                  dangerouslySetInnerHTML={{ __html: selectedEmail.htmlBody }}
+                  dangerouslySetInnerHTML={{ __html: selectedEmail.body }}
                 />
               ) : (
-                <pre className="text-sm text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">
-                  {selectedEmail.textBody || selectedEmail.bodyText || selectedEmail.body || '(Boş içerik)'}
-                </pre>
+                <p className="text-sm text-gray-500">(Boş içerik)</p>
               )}
             </div>
 
