@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Palette, Upload, Building2, Check, RefreshCw, Image, Trash2, PenLine } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import api from '../api/axios'
+import { uploadFiles } from '../api/upload'
 import toast from 'react-hot-toast'
 import MailEditor from '../components/MailEditor'
 
@@ -69,10 +70,8 @@ export default function SettingsPage() {
     }
     setUploading(true)
     try {
-      const form = new FormData()
-      form.append('files', file)
-      const { data } = await api.post('/api/files/upload', form)
-      const url = data.files?.[0]?.url || ''
+      const uploaded = await uploadFiles([file])
+      const url = uploaded[0]?.url || ''
       setLogo(url)
       toast.success('Logo yüklendi.')
     } catch {

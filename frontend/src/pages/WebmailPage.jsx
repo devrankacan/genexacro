@@ -22,6 +22,7 @@ import {
 import { format, parseISO, isToday, isYesterday } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import api from '../api/axios'
+import { uploadFiles } from '../api/upload'
 import toast from 'react-hot-toast'
 import MailEditor from '../components/MailEditor'
 
@@ -128,12 +129,10 @@ function ComposeModal({ onClose, onSent, prefillTo = '', prefillSubject = '', pr
               if (!files.length) return
               setUploading(true)
               try {
-                const formData = new FormData()
-                files.forEach(f => formData.append('files', f))
-                const res = await api.post('/api/files/upload', formData)
-                const uploaded = (res.data.files || []).map(f => ({ url: f.url, originalname: f.originalname }))
-                setAttachments(prev => [...prev, ...uploaded])
-              } catch { toast.error('Dosya yüklenemedi.') }
+                const uploaded = await uploadFiles(files)
+                setAttachments(prev => [...prev, ...uploaded.map(f => ({ url: f.url, originalname: f.originalname }))])
+                toast.success(`${uploaded.length} dosya eklendi.`)
+              } catch (err) { toast.error(err.message || 'Dosya yüklenemedi.') }
               finally { setUploading(false); e.target.value = '' }
             }} />
             <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-secondary text-xs py-1.5 px-3">

@@ -14,7 +14,7 @@ import {
   List, ListOrdered, Link as LinkIcon,
   Baseline, ImageIcon,
 } from 'lucide-react'
-import api from '../api/axios'
+import { uploadFiles } from '../api/upload'
 
 // Custom FontSize extension
 const FontSize = TextStyle.extend({
@@ -171,10 +171,8 @@ export default function MailEditor({ value, onChange, placeholder = 'Mesajınız
     const file = e.target.files?.[0]
     if (!file || !editor) return
     try {
-      const form = new FormData()
-      form.append('files', file)
-      const { data } = await api.post('/api/files/upload', form)
-      const url = data.files?.[0]?.url
+      const uploaded = await uploadFiles([file])
+      const url = uploaded[0]?.url
       if (url) editor.chain().focus().setImage({ src: url }).run()
     } catch {
       // silently fail

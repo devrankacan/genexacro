@@ -15,6 +15,7 @@ import {
 import { format, isToday, isYesterday, parseISO } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import api from '../api/axios'
+import { uploadFiles } from '../api/upload'
 import { useSocket } from '../context/SocketContext'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
@@ -303,11 +304,9 @@ export default function ChatPage() {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const formData = new FormData()
-    formData.append('files', file)
     try {
-      const res = await api.post('/api/files/upload', formData)
-      const fileUrl = res.data.files?.[0]?.url || res.data.url
+      const uploaded = await uploadFiles([file])
+      const fileUrl = uploaded[0]?.url
       const fileName = file.name
       const content = `[${fileName}](${fileUrl})`
       let msgRes
